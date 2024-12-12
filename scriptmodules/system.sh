@@ -138,7 +138,7 @@ function conf_build_vars() {
 function get_os_version() {
     # Get: OS distributor ID, description, release & codename
     local os
-    mapfile -t os < <(lsb_release -s -i -d -r -c)
+    mapfile -t os < <(lsb_release -idrc | cut -f2)
     __os_id="${os[0]}"
     __os_desc="${os[1]}"
     __os_release="${os[2]}"
