@@ -8,17 +8,11 @@ function setup_env() {
     __ERRMSGS=()
     __INFMSGS=()
 
-    get_os_version
-
-    # Detect: 'Void Linux'
-    [[ "${__os_desc}" != "Void Linux" ]] && fatalError "Unsupported OS: This script if for Void Linux!"
-
     test_chroot
 
     get_platform
-    #get_os_version
-    # Configure Raspberry Pi Graphics
-    isPlatform "rpi" && get_rpi_video
+    get_os_version
+
     get_emptypie_depends
 
     conf_memory_vars
@@ -35,11 +29,6 @@ function test_chroot() {
     if [[ "$(stat -c %d:%i /)" != "$(stat -c %d:%i /proc/1/root/.)" ]]; then
         [[ -z "${QEMU_CPU}" && -n "${__qemu_cpu}" ]] && export QEMU_CPU=${__qemu_cpu}
         __chroot=1
-    # Detect: 'systemd-nspawn'
-    elif [[ -n "$(systemd-detect-virt)" && "$(systemd-detect-virt)" == "systemd-nspawn" ]]; then
-        __chroot=1
-    else
-        __chroot=0
     fi
 }
 
@@ -63,17 +52,17 @@ function conf_memory_vars() {
 function conf_binary_vars() {
     [[ -z "${__has_binaries}" ]] && __has_binaries=0
 
-    # Set: Binary Download URLs
+    # Set: Binary download URLs
     #__binary_host="files.retropie.org.uk"
     #__binary_base_url="https://${__binary_host}/binaries"
 
-    # Code Might Be Used In Future
+    # Code might be used in future
     # __binary_path="${__os_codename}/${__platform}"
     # isPlatform "kms" && __binary_path+="/kms"
     # __binary_url="${__binary_base_url}/${__binary_path}"
 
     __archive_url="https://files.retropie.org.uk/archives"
-    __empie_url="https://github.com/V0rt3x667/EmptyPie-Resources/raw"
+    __empie_url="https://github.com/v0rt3x667/emptypie-resources/raw"
 
     # GPG Key Used By EmptyPie
     #__gpg_retropie_key="retropieproject@gmail.com"
@@ -89,7 +78,7 @@ function conf_binary_vars() {
 
 function conf_build_vars() {
     __gcc_version=$(gcc -dumpversion)
-    # Extract GCC major version
+    # Get: GCC major version
     __gcc_version="${__gcc_version%%.*}"
 
     # Calculate build concurrency
@@ -147,16 +136,35 @@ function conf_build_vars() {
 }
 
 function get_os_version() {
-    # Set: OS Distributor ID, Description & Release Number
-    __os_desc=$(lsb_release -sidr)
+    # Get: OS distributor ID, description, release & codename
+    local os
+    mapfile -t os < <(lsb_release -s -i -d -r -c)
+    __os_id="${os[0]}"
+    __os_desc="${os[1]}"
+    __os_release="${os[2]}"
+    __os_codename="${os[3]}"
 
-    # Code Might Be Used In Future
-    # if isPlatform "rpi" && isPlatform "32bit"; then
-    #    [[ -z "${__has_binaries}" ]] && __has_binaries=1
-    # fi
+    local error=""
+    case "${__os_id}" in
+        VoidLinux)
+            __os_void_ver="${__os_release}"
+            __platform_flags+=(void)
 
-    # Configure Raspberry Pi Graphics
-    #isPlatform "rpi" && get_rpi_video
+            # Code might be used in future
+            # if isPlatform "rpi" && isPlatform "32bit"; then
+                # Set: __has_binaries if not already set
+                # [[ -z "${__has_binaries}" ]] && __has_binaries=1
+            # fi
+            ;;
+        *)
+            error="Unsupported OS: This script is for Void Linux!"
+            ;;
+    esac
+
+    [[ -n "${error}" ]] && fatalError "${error}\n\n$(lsb_release -idrc)"
+
+    # Configure Raspberry Pi graphics stack
+    isPlatform "rpi" && get_rpi_video
 }
 
 function get_emptypie_depends() {
