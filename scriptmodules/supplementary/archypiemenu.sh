@@ -4,18 +4,18 @@
 #
 # Please see the LICENSE file at the top-level directory of this distribution.
 
-rp_module_id="archypiemenu"
+rp_module_id="emptypiemenu"
 rp_module_desc="EmptyPie Menu: Configuration Menu for EmulationStation"
 rp_module_section="core"
 rp_module_flags="nonet"
 
-function _update_hook_archypiemenu() {
+function _update_hook_emptypiemenu() {
     if ! rp_isInstalled "${md_id}" && [[ -f "${home}/.emulationstation/gamelists/emptypie/gamelist.xml" ]]; then
         mkdir -p "${md_inst}"
     fi
 }
 
-function depends_archypiemenu() {
+function depends_emptypiemenu() {
     local depends=(
         'mc'
         'p7zip'
@@ -23,13 +23,13 @@ function depends_archypiemenu() {
     getDepends "${depends[@]}"
 }
 
-function install_bin_archypiemenu() {
+function install_bin_emptypiemenu() {
     return
 }
 
-function configure_archypiemenu() {
+function configure_emptypiemenu() {
     if [[ "${md_mode}" == "install" ]]; then
-        local rpdir="${home}/EmptyPie/archypiemenu"
+        local rpdir="${home}/EmptyPie/emptypiemenu"
         mkdir -p "${rpdir}"
         cp -Rv "${md_data}/icons" "${rpdir}/"
         chown -R "${__user}":"${__group}" "${rpdir}"
@@ -77,7 +77,7 @@ function configure_archypiemenu() {
             'Connect to or disconnect from a Wi-Fi network & configure Wi-Fi settings.'
         )
 
-        setESSystem "EmptyPie" "emptypie" "${rpdir}" ".rp .sh" "sudo ${scriptdir}/archypie_packages.sh archypiemenu launch %ROM%" "" "emptypie"
+        setESSystem "EmptyPie" "emptypie" "${rpdir}" ".rp .sh" "sudo ${scriptdir}/emptypie_packages.sh emptypiemenu launch %ROM%" "" "emptypie"
 
         local file
         local name
@@ -94,7 +94,7 @@ function configure_archypiemenu() {
             file="${files[i]}"
             name="${names[i]}"
             desc="${descs[i]}"
-            image="${home}/EmptyPie/archypiemenu/icons/${files[i]}.png"
+            image="${home}/EmptyPie/emptypiemenu/icons/${files[i]}.png"
 
             touch "${rpdir}/${file}.rp"
 
@@ -106,13 +106,13 @@ function configure_archypiemenu() {
     fi
 }
 
-function remove_archypiemenu() {
-    rm -rf "${home}/EmptyPie/archypiemenu"
+function remove_emptypiemenu() {
+    rm -rf "${home}/EmptyPie/emptypiemenu"
     rm -rf "${home}/.emulationstation/gamelists/emptypie"
     delSystem emptypie
 }
 
-function launch_archypiemenu() {
+function launch_emptypiemenu() {
     clear
     local command="${1}"
     local basename="${command##*/}"

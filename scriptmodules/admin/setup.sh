@@ -67,7 +67,7 @@ function depends_setup() {
     # Check For "VERSION" File, If It Does Not Exist The "post_update" Function Will Be Triggered.
     if [[ ! -f "${rootdir}/VERSION" ]]; then
         joy2keyStop
-        exec "${scriptdir}/archypie_packages.sh" setup post_update gui_setup
+        exec "${scriptdir}/emptypie_packages.sh" setup post_update gui_setup
     fi
 
     # Set "__setup" To 1 Which Is Used To Adjust Package Function Behaviour If Called From The Setup GUI
@@ -117,7 +117,7 @@ function post_update_setup() {
     } &> >(_setup_gzip_log "$logfilename")
     rps_printInfo "$logfilename"
 
-    printMsgs "dialog" "NOTICE: The EmptyPie-Setup Script is available to download for free from 'https://github.com/V0rt3x667/EmptyPie-Setup.git'\n\nArchyPie includes software that has non-commercial licences. Selling EmptyPie or including EmptyPie with your commercial product is not allowed.\n\nNo copyrighted games are included with EmptyPie.\n\nIf you have been sold this software, you can let us know about it by emailing archypieproject@gmail.com."
+    printMsgs "dialog" "NOTICE: The EmptyPie-Setup Script is available to download for free from 'https://github.com/V0rt3x667/EmptyPie-Setup.git'\n\nArchyPie includes software that has non-commercial licences. Selling EmptyPie or including EmptyPie with your commercial product is not allowed.\n\nNo copyrighted games are included with EmptyPie.\n\nIf you have been sold this software, you can let us know about it by emailing emptypieproject@gmail.com."
 
     "${return_func[@]}"
 }
@@ -543,7 +543,7 @@ function update_packages_gui_setup() {
         updatescript_setup || return 1
         # Restart at post_update & then call "update_packages_gui_setup update" afterwards
         joy2keyStop
-        exec "$scriptdir/archypie_packages.sh" setup post_update update_packages_gui_setup update
+        exec "$scriptdir/emptypie_packages.sh" setup post_update update_packages_gui_setup update
     fi
 
     local update_os=0
@@ -704,7 +704,7 @@ function gui_setup() {
                 dialog --defaultno --yesno "Are you sure you want to update the EmptyPie-Setup script?" 22 76 2>&1 >/dev/tty || continue
                 if updatescript_setup; then
                     joy2keyStop
-                    exec "$scriptdir/archypie_packages.sh" setup post_update gui_setup
+                    exec "$scriptdir/emptypie_packages.sh" setup post_update gui_setup
                 fi
                 ;;
             X)

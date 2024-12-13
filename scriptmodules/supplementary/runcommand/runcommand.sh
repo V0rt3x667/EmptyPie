@@ -918,7 +918,7 @@ function user_menu() {
 
 function build_xinitrc() {
     local mode="${1}"
-    local xinitrc="/dev/shm/archypie_xinitrc"
+    local xinitrc="/dev/shm/emptypie_xinitrc"
 
     case "$mode" in
         clear)
