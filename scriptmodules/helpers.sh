@@ -266,7 +266,7 @@ function _mapPackage() {
 ## @retval 1 on failure
 function getDepends() {
     local own_pkgs=()
-    local apt_pkgs=()
+    local xbps_pkgs=()
     local all_pkgs=()
     local pkg
     for pkg in "${@}"; do
