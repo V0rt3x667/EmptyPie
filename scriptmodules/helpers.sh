@@ -174,7 +174,7 @@ function hasPackage() {
 
     local ver
     local status
-    local out="$(xbps-query -p pkgver "${pkg}" 2>/dev/null)"
+    local out="$(xbps-query -p pkgver ${pkg} 2>/dev/null)"
     if [[ "$?" -eq 0 ]]; then
         ver="${out##*-}"
         status="Installed"
