@@ -695,7 +695,7 @@ function main_menu() {
                 ;;
             U)
                 user_menu
-                local ret="${?}"
+                local ret="$?"
                 [[ "${ret}" -eq 1 ]] && return 1
                 [[ "${ret}" -eq 2 ]] && return 0
                 ;;
@@ -895,7 +895,7 @@ function user_menu() {
         default="${choice}"
         script="runcommand-menu/${options[choice*2-1]}.sh"
         user_script "${script}"
-        ret="${?}"
+        ret="$?"
         [[ "${ret}" -eq 1 || "${ret}" -eq 2 ]] && return "${ret}"
     done
 }
@@ -1004,7 +1004,7 @@ function mode_switch() {
         # set target resolution
         $XRANDR --output "${MODE_CUR[0]}" --mode "${MODE_CUR[1]}"
 
-        [[ "${?}" -eq 0 ]] && return 0
+        [[ "$?" -eq 0 ]] && return 0
     elif [[ "$HAS_MODESET" == "tvs" ]]; then
         if [[ "${mode_id[0]}" == "PAL" ]] || [[ "${mode_id[0]}" == "NTSC" ]]; then
             $TVSERVICE -c "${mode_id[*]}" >/dev/null
@@ -1013,7 +1013,7 @@ function mode_switch() {
         fi
 
         # if we have switched mode, switch the framebuffer resolution also
-        if [[ "${?}" -eq 0 ]]; then
+        if [[ "$?" -eq 0 ]]; then
             sleep 1
             clear
             MODE_CUR=($(get_${HAS_MODESET}_mode_info))
@@ -1275,7 +1275,7 @@ function check_menu() {
         [[ -n "${IMG_PID}" ]] && kill -SIGINT "${IMG_PID}"
         tput cnorm
         main_menu
-        dont_launch=${?}
+        dont_launch=$?
         tput civis
         clear
     fi
@@ -1309,11 +1309,11 @@ function launch_command() {
         # Turn Cursor On
         tput cnorm
         eval "${COMMAND}" </dev/tty 2>>"${LOG}"
-        ret=${?}
+        ret=$?
         tput civis
     else
         eval "${COMMAND}" </dev/tty &>>"${LOG}"
-        ret=${?}
+        ret=$?
     fi
     return ${ret}
 }
@@ -1384,7 +1384,7 @@ function runcommand() {
 
     local ret
     launch_command "${@}"
-    ret=${?}
+    ret=$?
 
     [[ -n "${IMG_PID}" ]] && kill -SIGINT "${IMG_PID}"
 

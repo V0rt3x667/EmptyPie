@@ -126,7 +126,7 @@ function inputconfiguration() {
 
 function fn_exists() {
     declare -f "${1}" > /dev/null
-    return ${?}
+    return $?
 }
 
 function sdl1_map() {

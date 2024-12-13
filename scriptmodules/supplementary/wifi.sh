@@ -276,7 +276,7 @@ The file should contain two lines as follows\n\nssid = \"YOUR WIFI SSID\"\npsk =
                     ;;
                 2)
                     dialog --defaultno --yesno "This will remove the Wi-Fi configuration & stop the Wi-Fi.\n\nAre you sure you want to continue?" 12 60 2>&1 >/dev/tty
-                    [[ ${?} -ne 0 ]] && continue
+                    [[ $? -ne 0 ]] && continue
                     remove_"${mgmt_tool}"_wifi "${iface}"
                     ;;
                 3)

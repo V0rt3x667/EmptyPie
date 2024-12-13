@@ -153,7 +153,7 @@ function package_setup() {
         if [[ "$has_net" -eq 1 ]]; then
             dialog --backtitle "$__backtitle" --infobox "Checking for updates for ${id} ..." 3 60 >/dev/tty
             rp_hasBinary "${id}"
-            local ret="${?}"
+            local ret="$?"
             [[ "${ret}" -eq 0 ]] && has_binary=1
             [[ "${ret}" -eq 2 ]] && has_net=0
         fi
@@ -178,7 +178,7 @@ function package_setup() {
 
             if [[ "$has_net" -eq 1 ]]; then
                 rp_hasNewerModule "${id}" "$pkg_origin"
-                local has_newer="${?}"
+                local has_newer="$?"
                 case "$has_newer" in
                     0)
                         status+="\nUpdate is available."

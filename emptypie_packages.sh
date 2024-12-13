@@ -77,7 +77,7 @@ rp_ret=0
 if [[ "${#}" -gt 0 ]]; then
     setupDirectories
     rp_callModule "${@}"
-    rp_ret="${?}"
+    rp_ret="$?"
 else
     rp_printUsageinfo
 fi

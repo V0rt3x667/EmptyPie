@@ -50,7 +50,7 @@ function fatalError() {
 # @retval 1 if the function name does not exist
 function fnExists() {
     declare -f "${1}" > /dev/null
-    return ${?}
+    return $?
 }
 
 function ask() {
@@ -68,7 +68,7 @@ function ask() {
 function runCmd() {
     local ret
     "${@}"
-    ret=${?}
+    ret=$?
     if [[ "${ret}" -ne 0 ]]; then
         md_ret_errors+=("Error running '${*}' - returned ${ret}")
     fi
@@ -147,10 +147,10 @@ function inputBox() {
 
     if [[ -f "${osk}" ]]; then
         params+=(--minchars "${minchars}")
-        text=$(python "${osk}" "${params[@]}" "${text}" 2>&1 >/dev/tty) || return ${?}
+        text=$(python "${osk}" "${params[@]}" "${text}" 2>&1 >/dev/tty) || return $?
     else
         while true; do
-            text=$(dialog "${params[@]}" 10 60 "${text}" 2>&1 >/dev/tty) || return ${?}
+            text=$(dialog "${params[@]}" 10 60 "${text}" 2>&1 >/dev/tty) || return $?
             [[ "${#text}" -ge "${minchars}" ]] && break
             dialog --msgbox "${title} must have at least ${minchars} characters" 8 60 2>&1 >/dev/tty
         done
@@ -175,7 +175,7 @@ function hasPackage() {
     local ver
     local status
     local out=$(xbps-query -p pkgver "${pkg}" 2>/dev/null)
-    if [[ "${?}" -eq 0 ]]; then
+    if [[ "$?" -eq 0 ]]; then
         ver="${out##*-}"
         status="Installed"
     fi
@@ -212,7 +212,7 @@ function xbpsUpdate() {
 function xbpsInstall() {
     xbpsUpdate
     xbps-install -S -y "${@}"
-    return ${?}
+    return $?
 }
 
 ## @fn xbpsRemove()
@@ -221,7 +221,7 @@ function xbpsInstall() {
 function xbpsRemove() {
     xbpsUpdate
     xbps-remove -R -y "${@}"
-    return ${?}
+    return $?
 }
 
 function _mapPackage() {
@@ -579,7 +579,7 @@ function moveConfigFile() {
 ## @retval >1 an error occurred
 function diffFiles() {
     diff -q "${1}" "${2}" >/dev/null
-    return ${?}
+    return $?
 }
 
 ## @fn compareVersions()
@@ -590,7 +590,7 @@ function diffFiles() {
 ## @retval 1 if the comparison was false
 function compareVersions() {
     dpkg --compare-versions "${1}" "${2}" "${3}" >/dev/null
-    return ${?}
+    return $?
 }
 
 ## @fn dirIsEmpty()
@@ -1039,7 +1039,7 @@ function runCurl() {
     # capture stderr - while passing both stdout & stderr to terminal
     # curl like wget outputs the progress meter to stderr, so we will extract the error line later
     cmd_err=$(curl "${params[@]}" 2>&1 1>&3 | tee /dev/stderr)
-    ret="${?}"
+    ret="$?"
 
     # remove stdin copy
     exec 3>&-
@@ -1089,7 +1089,7 @@ function download() {
 
     local ret
     runCurl "${params[@]}"
-    ret="${?}"
+    ret="$?"
 
     # if download failed, remove file, log error & return error code
     if [[ "${ret}" -ne 0 ]]; then
@@ -1121,7 +1121,7 @@ function downloadAndVerify() {
     if download "${url}.asc" "${dest}.asc"; then
         if download "$url" "$dest"; then
             cmd_out="$(gpg --verify "${dest}.asc" 2>&1)"
-            ret="${?}"
+            ret="$?"
             if [[ "${ret}" -ne 0 ]]; then
                 md_ret_errors+=("$dest failed signature check:\n\n$cmd_out")
             fi
@@ -1164,7 +1164,7 @@ function downloadAndExtract() {
             tar -xvf "$temp/${file}" -C "$dest" "${opts[@]}"
             ;;
     esac
-    ret=${?}
+    ret=$?
 
     rm -rf "$temp"
 
@@ -1567,7 +1567,7 @@ function signFile() {
     local file="${1}"
     local cmd_out
     cmd_out=$(gpg --default-key "$__gpg_signing_key" --detach-sign --armor --yes "${1}" 2>&1)
-    if [[ "${?}" -ne 0 ]]; then
+    if [[ "$?" -ne 0 ]]; then
         md_ret_errors+=("Failed to sign ${1}\n\n$cmd_out")
         return 1
     fi
