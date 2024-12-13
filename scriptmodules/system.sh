@@ -172,10 +172,11 @@ function get_emptypie_depends() {
         'base-devel'
         'curl'
         'dialog'
+        'dpkg'
         'git'
         'mesa'
         'perl-rename'
-        'python3'
+        'python3-pyudev'
         'unzip'
         'xmlstarlet'
 )

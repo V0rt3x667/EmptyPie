@@ -153,9 +153,9 @@ function package_setup() {
         if [[ "$has_net" -eq 1 ]]; then
             dialog --backtitle "$__backtitle" --infobox "Checking for updates for ${id} ..." 3 60 >/dev/tty
             rp_hasBinary "${id}"
-            local ret="$?"
-            [[ "$ret" -eq 0 ]] && has_binary=1
-            [[ "$ret" -eq 2 ]] && has_net=0
+            local ret="${?}"
+            [[ "${ret}" -eq 0 ]] && has_binary=1
+            [[ "${ret}" -eq 2 ]] && has_net=0
         fi
 
         local is_installed=0
@@ -178,7 +178,7 @@ function package_setup() {
 
             if [[ "$has_net" -eq 1 ]]; then
                 rp_hasNewerModule "${id}" "$pkg_origin"
-                local has_newer="$?"
+                local has_newer="${?}"
                 case "$has_newer" in
                     0)
                         status+="\nUpdate is available."
@@ -367,7 +367,7 @@ function section_gui_setup() {
         local last_type=""
         for id in "${ids[@]}"; do
             local type="${__mod_info[${id}/vendor]} - ${__mod_info[${id}/type]}"
-            # Create a heading for each origin and module type
+            # Create a heading for each origin & module type
             if [[ "$last_type" != "${type}" ]]; then
                 info="${type}"
                 pkgs+=("----" "\Z4$info ----" "Packages from $info")
@@ -393,11 +393,11 @@ function section_gui_setup() {
             options+=(U "Update All Installed $name" "This will update any installed $name. The packages will be updated by the method used previously.")
         fi
 
-        # Allow installing an entire section except for drivers and dependencies.
+        # Allow installing an entire section except for drivers & dependencies.
         if [[ "$has_net" -eq 1 && "$section" != "driver" && "$section" != "depends" ]]; then
             # Don't show "Install all packages" when we are showing only installed packages.
             if [[ "$section" != "inst" ]]; then
-                options+=(I "Install All $name" "This will install all $name. If a package is not installed and a pre-compiled binary is available it will be used. If a package is already installed, it will be updated by the method used previously.")
+                options+=(I "Install All $name" "This will install all $name. If a package is not installed & a pre-compiled binary is available it will be used. If a package is already installed, it will be updated by the method used previously.")
             fi
             options+=(X "Remove All Installed $name" "X This will remove all installed $name.")
         fi
@@ -541,7 +541,7 @@ function update_packages_gui_setup() {
         ! check_connection_gui_setup && return 1
         dialog --defaultno --yesno "Are you sure you want to update installed packages?" 22 76 2>&1 >/dev/tty || return 1
         updatescript_setup || return 1
-        # Restart at post_update and then call "update_packages_gui_setup update" afterwards
+        # Restart at post_update & then call "update_packages_gui_setup update" afterwards
         joy2keyStop
         exec "$scriptdir/archypie_packages.sh" setup post_update update_packages_gui_setup update
     fi
@@ -581,7 +581,7 @@ function packages_gui_setup() {
     local options=()
 
     for section in core main opt driver exp depends; do
-        options+=("$section" "Manage ${__sections[$section]} Packages" "$section Choose to Install, Update and Configure Packages from the ${__sections[$section]} Section")
+        options+=("$section" "Manage ${__sections[$section]} Packages" "$section Choose to Install, Update & Configure Packages from the ${__sections[$section]} Section")
     done
 
     options+=("----" "" "")
@@ -610,14 +610,14 @@ function packages_gui_setup() {
 function uninstall_setup()
 {
     dialog --defaultno --yesno "Are you sure you want to uninstall EmptyPie?" 22 76 2>&1 >/dev/tty || return 0
-    dialog --defaultno --colors --yesno "Are you \ZbREALLY\Zn sure you want to uninstall EmptyPie?\n\nThe \Z4\Zb${rootdir}\Zn folder will be removed - this includes configuration files for all EmptyPie components. If you wish to keep any config files of the emulators/ports that EmptyPie used, then choose \ZrNo\Zn now and save it first." 22 76 2>&1 >/dev/tty || return 0
+    dialog --defaultno --colors --yesno "Are you \ZbREALLY\Zn sure you want to uninstall EmptyPie?\n\nThe \Z4\Zb${rootdir}\Zn folder will be removed - this includes configuration files for all EmptyPie components. If you wish to keep any config files of the emulators/ports that EmptyPie used, then choose \ZrNo\Zn now & save it first." 22 76 2>&1 >/dev/tty || return 0
     clear
     printHeading "Uninstalling EmptyPie"
     for id in "${__mod_id[@]}"; do
         rp_isInstalled "${id}" && rp_callModule "${id}" remove
     done
     rm -rfv "${rootdir}"
-    dialog --defaultno --yesno "Do you want to remove all the files from ${datadir}? This includes all your installed ROMs, BIOS files and custom splashscreens." 22 76 2>&1 >/dev/tty && rm -rfv "${datadir}"
+    dialog --defaultno --yesno "Do you want to remove all the files from ${datadir}? This includes all your installed ROMs, BIOS files & custom splashscreens." 22 76 2>&1 >/dev/tty && rm -rfv "${datadir}"
     if dialog --defaultno --yesno "Do you want to remove all system packages that EmptyPie depends on? \n\nWARNING: This will remove packages like SDL2 even if they were installed before you installed EmptyPie, it will also remove any package configurations, such as those in /etc/samba for Samba.\n\nIf unsure choose No (selected by default)." 22 76 2>&1 >/dev/tty; then
         clear
         # Remove All Dependencies
@@ -644,12 +644,12 @@ function gui_setup() {
 
         cmd=(dialog --backtitle "$__backtitle" --title "EmptyPie-Setup Script" --cancel-label "Exit" --item-help --help-button --default-item "$default" --menu "Version: $__version - Last Commit: $commit\nSystem: $__platform ($__platform_arch) - Running On: $__os_desc" 22 76 16)
         options=(
-            I "Basic Install" "I This will install all packages from Core and Main which gives a basic EmptyPie install. Further packages can then be installed later from the Optional and Experimental sections. If binaries are available they will be used, alternatively packages will be built from source - which will take longer."
+            I "Basic Install" "I This will install all packages from Core & Main which gives a basic EmptyPie install. Further packages can then be installed later from the Optional & Experimental sections. If binaries are available they will be used, alternatively packages will be built from source - which will take longer."
 
-            U "Update" "U Updates EmptyPie-Setup and all currently installed packages. Will also allow to update OS packages. If binaries are available they will be used, otherwise packages will be built from source."
+            U "Update" "U Updates EmptyPie-Setup & all currently installed packages. Will also allow to update OS packages. If binaries are available they will be used, otherwise packages will be built from source."
 
             P "Manage Packages"
-            "P Install, Remove and Configure the various components of EmptyPie, including emulators, ports, and controller drivers."
+            "P Install, Remove & Configure the various components of EmptyPie, including emulators, ports, & controller drivers."
 
             C "Configuration & Tools"
             "C Configuration & Tools. Any packages you have installed that have additional configuration options will also appear here."
@@ -679,7 +679,7 @@ function gui_setup() {
         case "${choice}" in
             I)
                 ! check_connection_gui_setup && continue
-                dialog --defaultno --yesno "Are you sure you want to do a basic install?\n\nThis will install all packages from the 'Core' and 'Main' package sections." 22 76 2>&1 >/dev/tty || continue
+                dialog --defaultno --yesno "Are you sure you want to do a basic install?\n\nThis will install all packages from the 'Core' & 'Main' package sections." 22 76 2>&1 >/dev/tty || continue
                 clear
                 local logfilename
                 rps_logInit

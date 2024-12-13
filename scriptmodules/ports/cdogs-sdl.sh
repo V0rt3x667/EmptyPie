@@ -5,7 +5,7 @@
 # Please see the LICENSE file at the top-level directory of this distribution.
 
 rp_module_id="cdogs-sdl"
-rp_module_desc="C-Dogs SDL: Classic Overhead Run-and-Gun Game"
+rp_module_desc="C-Dogs SDL: Classic Overhead Run-&-Gun Game"
 rp_module_licence="GPL2 https://raw.githubusercontent.com/cxong/cdogs-sdl/master/COPYING"
 rp_module_repo="git https://github.com/cxong/cdogs-sdl :_get_branch_cdogs-sdl"
 rp_module_section="exp"

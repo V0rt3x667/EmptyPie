@@ -35,7 +35,7 @@ function printHeading() {
 
 ## @fn fatalError()
 ## @param message string & array of messages to display
-## @brief Calls PrintMsgs with "heading" type, and exits immediately.
+## @brief Calls PrintMsgs with "heading" type, & exits immediately.
 function fatalError() {
     printHeading "Error"
     echo -e "${1}"
@@ -50,7 +50,7 @@ function fatalError() {
 # @retval 1 if the function name does not exist
 function fnExists() {
     declare -f "${1}" > /dev/null
-    return $?
+    return ${?}
 }
 
 function ask() {
@@ -63,16 +63,16 @@ function ask() {
 
 ## @fn runCmd()
 ## @param command command to run
-## @brief Calls command and record any non zero return codes for later printing.
+## @brief Calls command & record any non zero return codes for later printing.
 ## @return whatever the command returns.
 function runCmd() {
     local ret
     "${@}"
-    ret=$?
-    if [[ "$ret" -ne 0 ]]; then
-        md_ret_errors+=("Error running '$*' - returned $ret")
+    ret=${?}
+    if [[ "${ret}" -ne 0 ]]; then
+        md_ret_errors+=("Error running '${*}' - returned ${ret}")
     fi
-    return $ret
+    return ${ret}
 }
 
 ## @fn hasFlag()
@@ -132,27 +132,27 @@ function editFile() {
 ## @param title title of dialog
 ## @param text default text
 ## @param minchars minimum chars to accept
-## @brief Opens an inputbox dialog and echoes resulting text. Uses the OSK if installed.
-## @details The input dialog has OK/Cancel buttons and can be cancelled by the user.
+## @brief Opens an inputbox dialog & echoes resulting text. Uses the OSK if installed.
+## @details The input dialog has OK/Cancel buttons & can be cancelled by the user.
 ## The dialog will enforce the minimum number of characters expected, re-prompting the user.
-## @retval 0 when the user entered the text and chose the OK button
+## @retval 0 when the user entered the text & chose the OK button
 ## @retval != 0 when the user chose the Cancel button
 function inputBox() {
     local title="${1}"
     local text="${2}"
     local minchars="${3}"
     [[ -z "${minchars}" ]] && minchars=0
-    local params=(--backtitle "${__backtitle}" --inputbox "Enter The ${title}")
+    local params=(--backtitle "${__backtitle}" --inputbox "Enter the ${title}")
     local osk="$(rp_getInstallPath joy2key)/osk.py"
 
     if [[ -f "${osk}" ]]; then
         params+=(--minchars "${minchars}")
-        text=$(python "${osk}" "${params[@]}" "${text}" 2>&1 >/dev/tty) || return $?
+        text=$(python "${osk}" "${params[@]}" "${text}" 2>&1 >/dev/tty) || return ${?}
     else
         while true; do
-            text=$(dialog "${params[@]}" 10 60 "${text}" 2>&1 >/dev/tty) || return $?
+            text=$(dialog "${params[@]}" 10 60 "${text}" 2>&1 >/dev/tty) || return ${?}
             [[ "${#text}" -ge "${minchars}" ]] && break
-            dialog --msgbox "${title} Must Have At Least ${minchars} Characters" 8 60 2>&1 >/dev/tty
+            dialog --msgbox "${title} must have at least ${minchars} characters" 8 60 2>&1 >/dev/tty
         done
     fi
 
@@ -174,127 +174,89 @@ function hasPackage() {
 
     local ver
     local status
-    # extract the first line only (for cases where both amd64 & i386 versions of a package are installed)
-    local out=$(xbps-query -W --showformat='${Status} ${Version}\n' ${1} 2>/dev/null | head -n1)
-    if [[ "$?" -eq 0 ]]; then
-        ver="${out##* }"
-        status="${out% *}"
+    local out=$(xbps-query -p pkgver "${pkg}" 2>/dev/null)
+    if [[ "${?}" -eq 0 ]]; then
+        ver="${out##*-}"
+        status="Installed"
     fi
 
     local installed=0
-    [[ "$status" == *"ok installed" ]] && installed=1
-    # if we are not checking version
-    if [[ -z "$req_ver" ]]; then
-        # if the package is installed return true
-        [[ "$installed" -eq 1 ]] && return 0
+    [[ "${status}" == *"Installed" ]] && installed=1
+    # If we are not checking version
+    if [[ -z "${req_ver}" ]]; then
+        # If the package is installed return true
+        [[ "${installed}" -eq 1 ]] && return 0
     else
-        # if checking version and the package is not installed we need to clear "ver" as it may contain
-        # the version number of a removed package and give a false positive with compareVersions.
-        # we still need to do the version check even if not installed due to the varied boolean operators
-        [[ "$installed" -eq 0 ]] && ver=""
+        # If checking version & the package is not installed we need to clear "ver" as it may contain
+        # the version number of a removed package & give a false positive with compareVersions.
+        # We still need to do the version check even if not installed due to the varied boolean operators
+        [[ "${installed}" -eq 0 ]] && ver=""
 
-        compareVersions "$ver" "$comp" "$req_ver" && return 0
+        compareVersions "${ver}" "${comp}" "${req_ver}" && return 0
     fi
     return 1
 }
 
-## @fn aptUpdate()
-## @brief Calls apt-get update (if it has not been called before).
-function aptUpdate() {
-    if [[ "$__apt_update" != "1" ]]; then
-        apt-get update --allow-releaseinfo-change
-        __apt_update="1"
+## @fn xbpsUpdate()
+## @brief Calls xbps-install -Su (if it has not been called before).
+function xbpsUpdate() {
+    if [[ "${__xbps_update}" != "1" ]]; then
+        xbps-install -Su -y
+        __xbps_update="1"
     fi
 }
 
-## @fn aptInstall()
+## @fn xbpsInstall()
 ## @param packages package / space separated list of packages to install
-## @brief Calls apt-get install with the packages provided.
-function aptInstall() {
-    aptUpdate
-    apt-get install -y "${@}"
-    return $?
+## @brief Calls xbps-install with the packages provided.
+function xbpsInstall() {
+    xbpsUpdate
+    xbps-install -S -y "${@}"
+    return ${?}
 }
 
-## @fn aptRemove()
+## @fn xbpsRemove()
 ## @param packages package / space separated list of packages to install
-## @brief Calls apt-get remove with the packages provided.
-function aptRemove() {
-    aptUpdate
-    apt-get remove -y "${@}"
-    return $?
+## @brief Calls xbps-remove with the packages provided.
+function xbpsRemove() {
+    xbpsUpdate
+    xbps-remove -R -y "${@}"
+    return ${?}
 }
 
 function _mapPackage() {
     local pkg="${1}"
-    case "$pkg" in
-        libraspberrypi-bin)
-            isPlatform "osmc" && pkg="rbp-userland-osmc"
-            isPlatform "xbian" && pkg="xbian-package-firmware"
-            ;;
-        libraspberrypi-dev)
-            isPlatform "osmc" && pkg="rbp-userland-dev-osmc"
-            isPlatform "xbian" && pkg="xbian-package-firmware"
-            ;;
-        mali-fbdev)
-            isPlatform "vero4k" && pkg=""
-            ;;
-        # handle our custom package alias LINUX-HEADERS
+    case "${pkg}" in
+        # Handle our custom package alias LINUX-HEADERS
         LINUX-HEADERS)
             if isPlatform "rpi"; then
-                if [[ "$__os_debian_ver" -lt 12 ]]; then
-                    pkg="raspberrypi-kernel-headers"
-                else
-                    # on RaspiOS bookworm and later, kernel packages are separated by arch and model
-                    isPlatform "rpi0" || isPlatform "rpi1" && pkg="linux-headers-rpi-v6"
-                    if isPlatform "32bit"; then
-                        isPlatform "rpi2" || isPlatform "rpi3" && pkg="linux-headers-rpi-v7"
-                        isPlatform "rpi4" && pkg="linux-headers-rpi-v7l"
-                    else
-                        isPlatform "rpi3" || isPlatform "rpi4" && pkg="linux-headers-rpi-v8"
-                        isPlatform "rpi5" && pkg="linux-headers-rpi-2712"
-                    fi
+                if [[ "${__os_codename}" == "void" ]]; then
+                    pkg="rpi-kernel-headers"
                 fi
-            elif isPlatform "armbian"; then
-                local branch="$(grep -oP "BRANCH=\K.*"      /etc/armbian-release)"
-                local family="$(grep -oP "LINUXFAMILY=\K.*" /etc/armbian-release)"
-                pkg="linux-headers-${branch}-${family}"
-            elif [[ -z "$__os_ubuntu_ver" ]]; then
-                pkg="linux-headers-$(uname -r)"
-            else
-                pkg="linux-headers-generic"
             fi
             ;;
-        # map libpng-dev to libpng12-dev for Jessie
-        libpng-dev)
-            [[ "$__os_debian_ver" -lt 9 ]] && pkg="libpng12-dev"
+        SDL)
+            rp_isEnabled "sdl1" && pkg="RP sdl1 ${pkg}"
             ;;
-        libsdl1.2-dev)
-            rp_isEnabled "sdl1" && pkg="RP sdl1 $pkg"
-            ;;
-        libsdl2-dev)
+        SDL2)
             if rp_isEnabled "sdl2"; then
-                # check whether to use our own sdl2 - can be disabled to resolve issues with
-                # mixing custom 64bit sdl2 and os distributed i386 version on multiarch
+                # Check whether to use our own sdl2 - can be disabled to resolve issues with
+                # mixing custom 64bit sdl2 & os distributed i386 version on multiarch
                 local own_sdl2=1
-                # default to off for x11 targets due to issues with dependencies with recent
-                # Ubuntu (19.04). eg libavdevice58 requiring exactly 2.0.9 sdl2.
+                # Default to off for x11 targets
                 isPlatform "x11" && own_sdl2=0
-                iniConfig " = " '"' "${configdir}/all/retropie.cfg"
+                iniConfig " = " '"' "${configdir}/all/emptypie.cfg"
                 iniGet "own_sdl2"
-                if [[ "$ini_value" == "1" ]]; then
+                if [[ "${ini_value}" == "1" ]]; then
                     own_sdl2=1
-                elif [[ "$ini_value" == "0" ]]; then
+                elif [[ "${ini_value}" == "0" ]]; then
                     own_sdl2=0
                 fi
-                [[ "$own_sdl2" -eq 1 ]] && pkg="RP sdl2 $pkg"
+                [[ "${own_sdl2}" -eq 1 ]] && pkg="RP sdl2 ${pkg}"
             fi
             ;;
-        libfreetype6-dev)
-            [[ "$__os_debian_ver" -gt 10 ]] || compareVersions "$__os_ubuntu_ver" gt 23.04 && pkg="libfreetype-dev"
-            ;;
     esac
-    echo "$pkg"
+    echo "${pkg}"
 }
 
 ## @fn getDepends()
@@ -308,17 +270,17 @@ function getDepends() {
     local all_pkgs=()
     local pkg
     for pkg in "${@}"; do
-        pkg=($(_mapPackage "$pkg"))
-        # manage our custom packages (pkg = "RP module_id pkg_name")
+        pkg=($(_mapPackage "${pkg}"))
+        # Manage our custom packages (pkg = "RP module_id pkg_name")
         if [[ "${pkg[0]}" == "RP" ]]; then
-            # if removing, check if any version is installed and queue for removal via the custom module
-            if [[ "$md_mode" == "remove" ]]; then
+            # If removing, check if any version is installed & queue for removal via the custom module
+            if [[ "${md_mode}" == "remove" ]]; then
                 if hasPackage "${pkg[2]}"; then
                     own_pkgs+=("${pkg[1]}")
                     all_pkgs+=("${pkg[2]}(custom)")
                 fi
             else
-                # if installing check if our version is installed and queue for installing via the custom module
+                # If installing check if our version is installed & queue for installing via the custom module
                 if hasPackage "${pkg[2]}" $(get_pkg_ver_${pkg[1]}) "ne"; then
                     own_pkgs+=("${pkg[1]}")
                     all_pkgs+=("${pkg[2]}(custom)")
@@ -327,61 +289,59 @@ function getDepends() {
             continue
         fi
 
-        if [[ "$md_mode" == "remove" ]]; then
-            # add package to apt_pkgs for removal if installed
-            if hasPackage "$pkg"; then
-                apt_pkgs+=("$pkg")
-                all_pkgs+=("$pkg")
+        if [[ "${md_mode}" == "remove" ]]; then
+            # Add package to xbps_pkgs for removal if installed
+            if hasPackage "${pkg}"; then
+                xbps_pkgs+=("${pkg}")
+                all_pkgs+=("${pkg}")
             fi
         else
-            # add package to apt_pkgs for installation if not installed
-            if ! hasPackage "$pkg"; then
-                apt_pkgs+=("$pkg")
-                all_pkgs+=("$pkg")
+            # Add package to xbps_pkgs for installation if not installed
+            if ! hasPackage "${pkg}"; then
+                xbps_pkgs+=("${pkg}")
+                all_pkgs+=("${pkg}")
             fi
         fi
-
     done
 
-    # return if no packages required
-    [[ ${#apt_pkgs[@]} -eq 0 && ${#own_pkgs[@]} -eq 0 ]] && return
+    # Return if no packages required
+    [[ ${#xbps_pkgs[@]} -eq 0 && ${#own_pkgs[@]} -eq 0 ]] && return
 
-    # if we are removing, then remove packages, do an autoremove to clean up additional packages and return
-    if [[ "$md_mode" == "remove" ]]; then
+    # If we are removing, then remove packages, remove unused dependencies, clean up orphans & cache & then return
+    if [[ "${md_mode}" == "remove" ]]; then
         printMsgs "console" "Removing dependencies: ${all_pkgs[*]}"
         for pkg in ${own_pkgs[@]}; do
-            rp_callModule "$pkg" remove
+            rp_callModule "${pkg}" remove
         done
-        apt-get remove --purge -y "${apt_pkgs[@]}"
-        apt-get autoremove --purge -y
+        xbps-remove -ROo -y "${xbps_pkgs[@]}"
         return 0
     fi
 
     printMsgs "console" "Did not find needed dependencies: ${all_pkgs[*]}. Trying to install them now."
 
-    # install any custom packages
+    # Install any custom packages
     for pkg in ${own_pkgs[@]}; do
-       rp_callModule "$pkg" _auto_
+       rp_callModule "${pkg}" _auto_
     done
 
-    aptInstall --no-install-recommends "${apt_pkgs[@]}"
+    xbpsInstall "${xbps_pkgs[@]}"
 
     local failed=()
-    # check the required packages again rather than return code of apt-get,
-    # as apt-get might fail for other reasons (eg other half installed packages)
-    for pkg in ${apt_pkgs[@]}; do
-        if ! hasPackage "$pkg"; then
+    # Check the required packages again rather than return code of xbps-install,
+    # as xbps-install might fail for other reasons (eg other half installed packages)
+    for pkg in ${xbps_pkgs[@]}; do
+        if ! hasPackage "${pkg}"; then
             # workaround for installing samba in a chroot (fails due to failed smbd service restart)
             # we replace the init.d script with an empty script so the install completes
-            if [[ "$pkg" == "samba" && "$__chroot" -eq 1 ]]; then
-                mv /etc/init.d/smbd /etc/init.d/smbd.old
-                echo "#!/bin/sh" >/etc/init.d/smbd
-                chmod u+x /etc/init.d/smbd
-                apt-get -f install
-                mv /etc/init.d/smbd.old /etc/init.d/smbd
-            else
-                failed+=("$pkg")
-            fi
+            #if [[ "${pkg}" == "samba" && "$__chroot" -eq 1 ]]; then
+            #    mv /etc/init.d/smbd /etc/init.d/smbd.old
+            #    echo "#!/bin/sh" >/etc/init.d/smbd
+            #    chmod u+x /etc/init.d/smbd
+            #    apt-get -f install
+            #    mv /etc/init.d/smbd.old /etc/init.d/smbd
+            #else
+                failed+=("${pkg}")
+            #fi
         fi
     done
 
@@ -394,7 +354,7 @@ function getDepends() {
 }
 
 ## @fn rpSwap()
-## @param command *on* to add swap if needed and *off* to remove later
+## @param command *on* to add swap if needed & *off* to remove later
 ## @param memory total memory needed (swap added = memory needed - available memory)
 ## @brief Adds additional swap to the system if needed.
 function rpSwap() {
@@ -462,7 +422,7 @@ function gitPullOrClone() {
 
     if [[ -d "${dir}/.git" ]]; then
         pushd "${dir}" > /dev/null || exit
-        # if we are using persistent repos, fetch the latest remote changes and clean the source so
+        # if we are using persistent repos, fetch the latest remote changes & clean the source so
         # any patches can be re-applied as needed.
         if [[ "$__persistent_repos" -eq 1 ]]; then
             runCmd git fetch
@@ -498,7 +458,7 @@ function gitPullOrClone() {
 }
 
 # @fn setupDirectories()
-# @brief Makes sure some required EmptyPie directories and files are created.
+# @brief Makes sure some required EmptyPie directories & files are created.
 function setupDirectories() {
     # Create home folders for configs that modules rely on
     mkUserDir "$home/.cache"
@@ -510,11 +470,12 @@ function setupDirectories() {
     mkUserDir "$datadir"
     mkUserDir "$romdir"
     mkUserDir "$biosdir"
-    mkUserDir "$arpdir"
+    mkUserDir "$empdir"
+    mkUserDir "$savedir"
     mkUserDir "${configdir}"
     mkUserDir "${configdir}/all"
 
-    # make sure we have inifuncs.sh in place and that it is up to date
+    # make sure we have inifuncs.sh in place & that it is up to date
     mkdir -p "$rootdir/lib"
     local helper
     for helper in inifuncs.sh archivefuncs.sh; do
@@ -523,7 +484,7 @@ function setupDirectories() {
         fi
     done
 
-    # create template for autoconf.cfg and make sure it is owned by ${__user}
+    # create template for autoconf.cfg & make sure it is owned by ${__user}
     local config="${configdir}/all/autoconf.cfg"
     if [[ ! -f "$config" ]]; then
         echo "# this file can be used to enable/disable emptypie autoconfiguration features" >"$config"
@@ -533,7 +494,7 @@ function setupDirectories() {
 
 ## @fn rmDirExists()
 ## @param dir directory to remove
-## @brief Removes a directory and all contents if it exists.
+## @brief Removes a directory & all contents if it exists.
 function rmDirExists() {
     if [[ -d "${1}" ]]; then
         rm -rf "${1}"
@@ -565,49 +526,49 @@ function mkRomDir() {
 ## @fn moveConfigDir()
 ## @param from source directory
 ## @param to destination directory
-## @brief Moves the contents of a folder and symlinks to the new location.
+## @brief Moves the contents of a folder & symlinks to the new location.
 function moveConfigDir() {
     local from="${1}"
     local to="${2}"
 
     # if we are in remove mode - remove the symlink
-    if [[ "$md_mode" == "remove" ]]; then
-        [[ -h "$from" ]] && rm -f "$from"
+    if [[ "${md_mode}" == "remove" ]]; then
+        [[ -h "${from}" ]] && rm -f "${from}"
         return
     fi
 
-    mkUserDir "$to"
+    mkUserDir "${to}"
     # move any old configs to the new location
-    if [[ -d "$from" && ! -h "$from" ]]; then
-        cp -a "$from/." "$to/"
-        rm -rf "$from"
+    if [[ -d "${from}" && ! -h "${from}" ]]; then
+        cp -a "${from}/." "${to}/"
+        rm -rf "${from}"
     fi
-    ln -snf "$to" "$from"
+    ln -snf "${to}" "${from}"
     # set ownership of the actual link to ${__user}
-    chown -h "${__user}":"${__group}" "$from"
+    chown -h "${__user}":"${__group}" "${from}"
 }
 
 ## @fn moveConfigFile()
 ## @param from source file
 ## @param to destination file
-## @brief Moves the file and symlinks to the new location.
+## @brief Moves the file & symlinks to the new location.
 function moveConfigFile() {
     local from="${1}"
     local to="${2}"
 
-    # if we are in remove mode - remove the symlink
-    if [[ "$md_mode" == "remove" && -h "$from" ]]; then
-        rm -f "$from"
+    # If we are in remove mode - remove the symlink
+    if [[ "${md_mode}" == "remove" && -h "${from}" ]]; then
+        rm -f "${from}"
         return
     fi
 
-    # move old file
-    if [[ -f "$from" && ! -h "$from" ]]; then
-        mv "$from" "$to"
+    # Move old file
+    if [[ -f "${from}" && ! -h "${from}" ]]; then
+        mv "${from}" "${to}"
     fi
-    ln -sf "$to" "$from"
-    # set ownership of the actual link to ${__user}
-    chown -h "${__user}":"${__group}" "$from"
+    ln -sf "${to}" "${from}"
+    # Set: Ownership of the actual link to ${__user}
+    chown -h "${__user}":"${__group}" "${from}"
 }
 
 ## @fn diffFiles()
@@ -619,20 +580,18 @@ function moveConfigFile() {
 ## @retval >1 an error occurred
 function diffFiles() {
     diff -q "${1}" "${2}" >/dev/null
-    return $?
+    return ${?}
 }
 
 ## @fn compareVersions()
-## @param version firstversion to compare
-## @param version second version to compare
-## @brief Compares two version numbers using vercmp
-## @retval 0 if the comparison is eq
-## @retval 1 if the comparison is gt
-## @retval -1 if the comparison is lt
+## @param version first version to compare
+## @param operator operator to use (lt le eq ne ge gt)
+## @brief version second version to compare
+## @retval 0 if the comparison was true
+## @retval 1 if the comparison was false
 function compareVersions() {
-    local ver
-    ver=$(vercmp "${1}" "${2}")
-    echo "${ver}"
+    dpkg --compare-versions "${1}" "${2}" "${3}" >/dev/null
+    return ${?}
 }
 
 ## @fn dirIsEmpty()
@@ -679,20 +638,20 @@ function copyDefaultConfig() {
 ## @param to destination file
 ## @brief Renames an existing module.
 ## @details Renames an existing module, moving it's install folder to the new location
-## and changing any references to it in `emulators.cfg`.
+## & changing any references to it in `emulators.cfg`.
 function renameModule() {
     local from="${1}"
     local to="${2}"
-    # move from old location and update emulators.cfg
-    if [[ -d "$rootdir/$md_type/$from" ]]; then
-        rm -rf "$rootdir/$md_type/$to"
-        mv "$rootdir/$md_type/$from" "$rootdir/$md_type/$to"
-        # replace any default = "$from"
-        sed -i --follow-symlinks "s/\"$from\"/\"$to\"/g" "${configdir}"/*/emulators.cfg
-        # replace any $from = "cmdline"
-        sed -i --follow-symlinks "s/^$from\([ =]\)/$to\1/g" "${configdir}"/*/emulators.cfg
-        # replace any paths with /$from/
-        sed -i --follow-symlinks "s|/$from/|/$to/|g" "${configdir}"/*/emulators.cfg
+    # move from old location & update emulators.cfg
+    if [[ -d "$rootdir/$md_type/${from}" ]]; then
+        rm -rf "$rootdir/$md_type/${to}"
+        mv "$rootdir/$md_type/${from}" "$rootdir/$md_type/${to}"
+        # replace any default = "${from}"
+        sed -i --follow-symlinks "s/\"${from}\"/\"${to}\"/g" "${configdir}"/*/emulators.cfg
+        # replace any ${from} = "cmdline"
+        sed -i --follow-symlinks "s/^${from}\([ =]\)/${to}\1/g" "${configdir}"/*/emulators.cfg
+        # replace any paths with /${from}/
+        sed -i --follow-symlinks "s|/${from}/|/${to}/|g" "${configdir}"/*/emulators.cfg
     fi
 }
 
@@ -712,7 +671,7 @@ function addUdevInputRules() {
 ## @param config ini file to edit
 ## @brief Allows editing of ini files with a user friendly dialog based gui.
 ## @details Some arrays need to be configured before calling this, which are
-## used to display what can be edited and the options available.
+## used to display what can be edited & the options available.
 ##
 ## The first array is `$ini_titles` which provides the titles for each
 ## entry..
@@ -728,11 +687,11 @@ function addUdevInputRules() {
 ## If the first string is `_function_` then the next string should be a function
 ## name that will handle that entry. The function will be called with a parameter
 ## `get` or `set`. The function should return the value for get via `echo`
-## and should handle any gui functionality when called with `set`. This can be
+## & should handle any gui functionality when called with `set`. This can be
 ## used for example to build custom dialogs.
 ##
 ## If the first option is anything else, it is assumed to be a key name, followed
-## by a control type and a list of parameters.
+## by a control type & a list of parameters.
 ##
 ## Control types are:
 ##  * `_id_` map the following values to an id
@@ -1003,7 +962,7 @@ function setConfigRoot() {
 ## It can provide a shortcut way to load a set of keys from an ini file into
 ## variables.
 ##
-## It requires iniConfig to be called first to specify the format and file.
+## It requires iniConfig to be called first to specify the format & file.
 ## eg.
 ##
 ##     iniConfig " = " '"' "${configdir}/all/mymodule.cfg"
@@ -1011,9 +970,9 @@ function setConfigRoot() {
 ##        'some_option=1' \
 ##        'another_option=2'
 ##
-## This would load the keys `some_option` and `another_option` into local
-## variables `some_option` and `another_option`. If the keys did not exist
-## in mymodule.cfg the variables would be initialised to 1 and 2.
+## This would load the keys `some_option` & `another_option` into local
+## variables `some_option` & `another_option`. If the keys did not exist
+## in mymodule.cfg the variables would be initialised to 1 & 2.
 function loadModuleConfig() {
     local options=("${@}")
     local option
@@ -1058,8 +1017,8 @@ function applyPatch() {
 
 ## @fn runCurl()
 ## @params ... commandline arguments to pass to curl
-## @brief Run curl with chosen parameters and handle curl errors
-## @details Runs curl with the provided parameters, whilst also capturing the output and extracting
+## @brief Run curl with chosen parameters & handle curl errors
+## @details Runs curl with the provided parameters, whilst also capturing the output & extracting
 ## any error message, which is stored in the global variable __NET_ERRMSG. Function returns the return
 ## code provided by curl. The environment variable __curl_opts can be set to override default curl
 ## parameters, eg - timeouts etc.
@@ -1078,24 +1037,24 @@ function runCurl() {
     # set up additional file descriptor for stdin
     exec 3>&1
 
-    # capture stderr - while passing both stdout and stderr to terminal
+    # capture stderr - while passing both stdout & stderr to terminal
     # curl like wget outputs the progress meter to stderr, so we will extract the error line later
     cmd_err=$(curl "${params[@]}" 2>&1 1>&3 | tee /dev/stderr)
-    ret="$?"
+    ret="${?}"
 
     # remove stdin copy
     exec 3>&-
 
     set +o pipefail
 
-    # if there was an error, extract it and put in __NET_ERRMSG
-    if [[ "$ret" -ne 0 ]]; then
+    # if there was an error, extract it & put in __NET_ERRMSG
+    if [[ "${ret}" -ne 0 ]]; then
         # as we also capture the curl progress output, extract the last line which contains the error
         __NET_ERRMSG="${cmd_err##*$'\n'}"
     else
         __NET_ERRMSG=""
     fi
-    return "$ret"
+    return "${ret}"
 }
 
 ## @fn download()
@@ -1131,22 +1090,22 @@ function download() {
 
     local ret
     runCurl "${params[@]}"
-    ret="$?"
+    ret="${?}"
 
-    # if download failed, remove file, log error and return error code
-    if [[ "$ret" -ne 0 ]]; then
-        # remove dest if not set to stdout and exists
+    # if download failed, remove file, log error & return error code
+    if [[ "${ret}" -ne 0 ]]; then
+        # remove dest if not set to stdout & exists
         [[ "$dest" != "-" && -f "$dest" ]] && rm "$dest"
         md_ret_errors+=("URL $url failed to download.\n\n$__NET_ERRMSG")
     fi
-    return "$ret"
+    return "${ret}"
 }
 
 ## @fn downloadAndVerify()
 ## @param url url of file
 ## @param dest destination file (optional)
-## @brief Download a file and a corresponding .asc signature and verify the contents
-## @details Download a file and a corresponding .asc signature and verify the contents.
+## @brief Download a file & a corresponding .asc signature & verify the contents
+## @details Download a file & a corresponding .asc signature & verify the contents.
 ## The .asc file will be downloaded to verify the file, but will be removed after downloading.
 ## If the dest parameter is omitted, the file will be downloaded to the current directory
 ## @retval 0 on success
@@ -1163,21 +1122,21 @@ function downloadAndVerify() {
     if download "${url}.asc" "${dest}.asc"; then
         if download "$url" "$dest"; then
             cmd_out="$(gpg --verify "${dest}.asc" 2>&1)"
-            ret="$?"
-            if [[ "$ret" -ne 0 ]]; then
+            ret="${?}"
+            if [[ "${ret}" -ne 0 ]]; then
                 md_ret_errors+=("$dest failed signature check:\n\n$cmd_out")
             fi
         fi
     fi
-    return "$ret"
+    return "${ret}"
 }
 
 ## @fn downloadAndExtract()
 ## @param url url of archive
 ## @param dest destination folder for the archive
 ## @param optional additional parameters to pass to the decompression tool.
-## @brief Download and extract an archive
-## @details Download and extract an archive.
+## @brief Download & extract an archive
+## @details Download & extract an archive.
 ## @retval 0 on success
 function downloadAndExtract() {
     local url="${1}"
@@ -1189,7 +1148,7 @@ function downloadAndExtract() {
     local file="${url##*/}"
 
     local temp="$(mktemp -d)"
-    # download file, removing temporary folder and returning on error
+    # download file, removing temporary folder & returning on error
     if ! download "$url" "$temp/${file}"; then
         rm -rf "$temp"
         return 1
@@ -1206,11 +1165,11 @@ function downloadAndExtract() {
             tar -xvf "$temp/${file}" -C "$dest" "${opts[@]}"
             ;;
     esac
-    ret=$?
+    ret=${?}
 
     rm -rf "$temp"
 
-    return $ret
+    return ${ret}
 }
 
 ## @fn joy2keyStart()
@@ -1286,8 +1245,8 @@ function addSystem() {
     local cmd
     local path
 
-    # if removing and we don't have an emulators.cfg we can remove the system from the frontends
-    if [[ "$md_mode" == "remove" ]] && [[ ! -f "$md_conf_root/$system/emulators.cfg" ]]; then
+    # if removing & we don't have an emulators.cfg we can remove the system from the frontends
+    if [[ "${md_mode}" == "remove" ]] && [[ ! -f "$md_conf_root/$system/emulators.cfg" ]]; then
         delSystem "$system" "$fullname"
         return
     fi
@@ -1362,7 +1321,7 @@ function delSystem() {
 ##     addPort "lr-tyrquake" "quake" "Quake Mission Pack 2 (rogue)" "$emudir/retroarch/bin/retroarch -L $md_inst/tyrquake_libretro.so --config $md_conf_root/quake/retroarch.cfg %ROM%" "$romdir/ports/quake/id1/rogue/pak0.pak"
 ##
 ## Would add an entry in ${configdir}/ports/quake/emulators.cfg for lr-tyrquake (setting it to default if no default set)
-## and create a launch script in $romdir/ports for each game.
+## & create a launch script in $romdir/ports for each game.
 function addPort() {
     local id="${1}"
     local port="${2}"
@@ -1376,10 +1335,10 @@ function addPort() {
     #fi
 
     # remove the emulator / port
-    if [[ "$md_mode" == "remove" ]]; then
+    if [[ "${md_mode}" == "remove" ]]; then
         delEmulator "${id}" "$port"
 
-        # remove launch script if in remove mode and the ports emulators.cfg is empty
+        # remove launch script if in remove mode & the ports emulators.cfg is empty
         [[ ! -f "$md_conf_root/$port/emulators.cfg" ]] && rm -f "${file}"
 
         # if there are no more port launch scripts we can remove ports from emulation station
@@ -1541,7 +1500,7 @@ function dkmsManager() {
 ## @fn getIPAddress()
 ## @param dev optional specific network device to use for address lookup
 ## @brief Obtains the current externally routable source IP address of the machine
-## @details This function first tries to obtain an external IPv4 route and
+## @details This function first tries to obtain an external IPv4 route &
 ## otherwise tries an IPv6 route if the IPv4 route can not be determined.
 ## If no external route can be determined, nothing will be returned.
 ## This function uses Google's DNS servers as the external lookup address.
@@ -1581,8 +1540,8 @@ function isConnected() {
 ## @param params additional rsync parameters - eg --delete
 ## @brief Rsyncs data to remote host for admin modules
 ## @details Used to rsync data to our server for admin modules. Default remote
-## user is emptypie, host is $__binary_host and default port is 22. These can be overridden with
-## env vars __upload_user __upload_host and __upload_port
+## user is emptypie, host is $__binary_host & default port is 22. These can be overridden with
+## env vars __upload_user __upload_host & __upload_port
 ##
 ## The default parameters for rsync are "-av --delay-updates" - more can be added via the 3rd+ argument
 function adminRsync() {
@@ -1609,7 +1568,7 @@ function signFile() {
     local file="${1}"
     local cmd_out
     cmd_out=$(gpg --default-key "$__gpg_signing_key" --detach-sign --armor --yes "${1}" 2>&1)
-    if [[ "$?" -ne 0 ]]; then
+    if [[ "${?}" -ne 0 ]]; then
         md_ret_errors+=("Failed to sign ${1}\n\n$cmd_out")
         return 1
     fi

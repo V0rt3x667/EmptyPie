@@ -600,7 +600,7 @@ function gui_skyscraper() {
         [2]="Select The Source For ROM Scraping. Supported Sources:\n\ZbONLINE\Zn\n * ScreenScraper (screenscraper.fr)\n * TheGamesDB (thegamesdb.net)\n * OpenRetro (openretro.org)\n * ArcadeDB (adb.arcadeitalia.net)\n * World of Spectrum (worldofspectrum.org)\n\ZbLOCAL\Zn\n * EmulationStation Gamelist (Imports Data From ES Gamelist)\n * Import (Imports Resources In The Local Cache)\n\n\Zb\ZrNOTE\Zn: Some Sources Require A Username And Password For Access. These Can Be Set Per Source In The \Zbconfig.ini\Zn Configuration File.\n\n Skyscraper Parameter: \Zb-s <source_name>\Zn"
         [3]="Options For Resource Gathering And Caching Sub-Menu.\nClick To Open It."
         [4]="Generate EmulationStation Game Lists.\nRuns The Scraper To Incorporate Downloaded Information And Media From The Local Cache And Write Them To \Zbgamelist.xml\Zn Files To Be Used By EmulationStation."
-        [5]="Options For EmulationStation Game List Generation Sub-Menu.\nClick to open it and change the options."
+        [5]="Options For EmulationStation Game List Generation Sub-Menu.\nClick to open it & change the options."
         [V]="Toggle The Download And Caching Of Videos.\nThis Also Toggles Whether The Videos Will Be Included In The Resulting Gamelist.\n\nSkyscraper Option: \Zb--flags videos\Zn"
         [A]="Advanced Options Sub-Menu."
         [U]="Check For An Update To Skyscraper."

@@ -47,9 +47,9 @@
 ##  * start, select
 ##  * leftanalogup, leftanalogdown, leftanalogleft, leftanalogright
 ##  * rightanalogup, rightanalogdown, rightanalogleft, rightanalogright
-## * ${2} - input type is button, axis or hat for joysticks, key for keyboard and button for cec.
+## * ${2} - input type is button, axis or hat for joysticks, key for keyboard & button for cec.
 ## * ${3} - button id of the input for a joystick, SDL2 keycode for a keyboard, or button id for cec.
-## * ${4} - value of the joystick input or 1 for keyboard and cec.
+## * ${4} - value of the joystick input or 1 for keyboard & cec.
 ##
 ## Returns:
 ##   None
@@ -70,7 +70,7 @@ function inputconfiguration() {
         fi
     done < <(xmlstarlet sel --text -t -m "/inputList/inputConfig/input"  -v "concat(@name,' ',@type,' ',@id,' ',@value)" -n "$es_conf")
 
-    local inputscriptdir=$(dirname "$0")
+    local inputscriptdir=$(dirname "${0}")
     local inputscriptdir=$(cd "$inputscriptdir" && pwd)
 
     DEVICE_TYPE=$(xmlstarlet sel --text -t -v "/inputList/inputConfig/@type" "$es_conf")
@@ -102,7 +102,7 @@ function inputconfiguration() {
         fn_exists "$funcname" && "$funcname"
 
         local input_name
-        # loop through all buttons and use corresponding config function if it exists
+        # loop through all buttons & use corresponding config function if it exists
         for input_name in "${!mapping[@]}"; do
             funcname="map_${module_id}_${DEVICE_TYPE}"
 
@@ -126,7 +126,7 @@ function inputconfiguration() {
 
 function fn_exists() {
     declare -f "${1}" > /dev/null
-    return $?
+    return ${?}
 }
 
 function sdl1_map() {

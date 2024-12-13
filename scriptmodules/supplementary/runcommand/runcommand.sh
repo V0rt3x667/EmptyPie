@@ -19,7 +19,7 @@
 ##
 ## `runcommand.sh VIDEO_MODE _SYS_/_PORT_ SYSTEM ROM`
 ##
-## Video mode switching is supported on X11, KMS and Raspberry Pi (legacy graphics) systems
+## Video mode switching is supported on X11, KMS & Raspberry Pi (legacy graphics) systems
 ##
 ## Automatic video mode selection (all):
 ##
@@ -38,20 +38,20 @@
 ##
 ## Manual video mode selection (KMS):
 ##
-## * VIDEO_MODE = "CRTCID-MODEID": set video mode to CRTC connector id and mode id
+## * VIDEO_MODE = "CRTCID-MODEID": set video mode to CRTC connector id & mode id
 ##
 ## Manual video mode selection (X11):
 ##
-## * VIDEO_MODE = "OUTPUT:MODEID": set video mode to connected output name and mode index
+## * VIDEO_MODE = "OUTPUT:MODEID": set video mode to connected output name & mode index
 ##
 ## @note
 ## Video mode switching only happens if the monitor reports the modes as available
-## (via tvservice) and the requested mode differs from the currently active mode
+## (via tvservice) & the requested mode differs from the currently active mode
 ##
 ## Additionally it is possible to pass in the current screen resolution
 ## (selectable in the runcommand menu) to the emulator to be launched. The
-## respective variables are \c \%XRES% and \c \%YRES% which will be replaced
-## with the specific values as the placeholders \c \%ROM% and \c \%BASENAME%
+## respective variables are \c \%XRES% & \c \%YRES% which will be replaced
+## with the specific values as the placeholders \c \%ROM% & \c \%BASENAME%
 ## (see below). For example it is possible to set \c
 ## --displaysize=\%XRESx\%YRES% in emulators.cfg` if an emulator has a command
 ## line switch to set the resolution.
@@ -63,15 +63,15 @@
 ## launching in EmptyPie so the user can switch emulator used as well as other
 ## options from the runcommand GUI.
 ##
-## If `SAVE_NAME` is included, that is used for loading and saving of video output
+## If `SAVE_NAME` is included, that is used for loading & saving of video output
 ## modes as well as rendering backend settings for the current `COMMAND`. If omitted,
-## the binary name is used as a key for the loading and saving. The savename is
+## the binary name is used as a key for the loading & saving. The savename is
 ## also displayed in the video output menu (detailed below), so for our purposes
 ## we send the emulator module id, which is somewhat descriptive yet short.
 ##
 ## On launch this script waits for two seconds for a key or joystick press. If
 ## pressed the GUI is shown, where a user can set video modes, default emulators
-## and other options (depending what is being launched).
+## & other options (depending what is being launched).
 
 ROOTDIR="/opt/emptypie"
 CONFIGDIR="$ROOTDIR/configs"
@@ -134,7 +134,7 @@ function get_config() {
 }
 
 function start_joy2key() {
-    # check if joystick support is enabled and joy2key is available
+    # check if joystick support is enabled & joy2key is available
     [[ "$DISABLE_JOYSTICK" -eq 1 || ! -f "$JOY2KEY" ]] && return
 
     "$JOY2KEY" start 2>/dev/null && return 0
@@ -149,14 +149,14 @@ function get_params() {
     MODE_REQ="${1}"
     COMMAND="${2}"
 
-    [[ -z "$MODE_REQ" || -z "$COMMAND" ]] && return 1
+    [[ -z "$MODE_REQ" || -z "${COMMAND}" ]] && return 1
 
     CONSOLE_OUT=0
-    # if the COMMAND is _SYS_, or _PORT_ arg 3 should be system name, and arg 4 rom/game, and we look up the configured system for that combination
-    if [[ "$COMMAND" == "_SYS_" || "$COMMAND" == "_PORT_" ]]; then
+    # if the COMMAND is _SYS_, or _PORT_ arg 3 should be system name, & arg 4 rom/game, & we look up the configured system for that combination
+    if [[ "${COMMAND}" == "_SYS_" || "${COMMAND}" == "_PORT_" ]]; then
         # if the rom is actually a special +Start System.sh script, we should launch the script directly.
         if [[ "${4}" =~ \/\+Start\ (.+)\.sh$ ]]; then
-            # extract emulator from the name (and lowercase it)
+            # extract emulator from the name (& lowercase it)
             EMULATOR=${BASH_REMATCH[1],,}
             IS_SYS=0
             COMMAND="bash \"${4}\""
@@ -168,7 +168,7 @@ function get_params() {
             ROM="${4}"
             ROM_BN_EXT="${ROM##*/}"
             ROM_BN="${ROM_BN_EXT%.*}"
-            if [[ "$COMMAND" == "_PORT_" ]]; then
+            if [[ "${COMMAND}" == "_PORT_" ]]; then
                 CONF_ROOT="${CONFIGDIR}/ports/${SYSTEM}"
                 EMU_SYS_CONF="${CONF_ROOT}/emulators.cfg"
                 IS_PORT=1
@@ -177,7 +177,7 @@ function get_params() {
                 EMU_SYS_CONF="${CONF_ROOT}/emulators.cfg"
                 IS_PORT=0
             fi
-            SYS_SAVE_ROM_OLD="a$(echo "${SYSTEM}$ROM" | md5sum | cut -d" " -f1)"
+            SYS_SAVE_ROM_OLD="a$(echo "${SYSTEM}${ROM}" | md5sum | cut -d" " -f1)"
             SYS_SAVE_ROM="$(clean_name "${SYSTEM}_${ROM_BN}")"
             [[ -z "${SYSTEM}" ]] && return 1
             get_sys_command
@@ -188,7 +188,7 @@ function get_params() {
         EMULATOR="${3}"
         # if we have an emulator name (such as module_id) we use that for storing/loading parameters for video mode / backend
         # if the parameter is empty we use the name of the binary (to avoid breakage with out of date emulationstation configs)
-        [[ -z "$EMULATOR" ]] && EMULATOR="${COMMAND/% */}"
+        [[ -z "${EMULATOR}" ]] && EMULATOR="${COMMAND/% */}"
     fi
 
     NETPLAY=0
@@ -204,8 +204,8 @@ function clean_name() {
 
 function set_save_vars() {
     # convert emulator name / binary to a names usable as variables in our config files
-    SAVE_EMU="$(clean_name "$EMULATOR")"
-    SAVE_ROM_OLD=r$(echo "$COMMAND" | md5sum | cut -d" " -f1)
+    SAVE_EMU="$(clean_name "${EMULATOR}")"
+    SAVE_ROM_OLD=r$(echo "${COMMAND}" | md5sum | cut -d" " -f1)
     if [[ "${IS_SYS}" -eq 1 ]]; then
         SAVE_ROM="${SAVE_EMU}_$(clean_name "$ROM_BN")"
     else
@@ -247,7 +247,7 @@ function get_all_kms_modes() {
 
     # parse only the video modes connected to the current active crtc
     while read -r mode_str mode_id con encoder_id info; do
-           # we only need 2nd column (mode index) and the 5+ columns (resolution info)
+           # we only need 2nd column (mode index) & the 5+ columns (resolution info)
            # populate resolution info into arrays (using mapped crtc encoder value)
            MODE_ID+=($crtc-$mode_id)
            MODE[$crtc-$mode_id]="$info"
@@ -271,21 +271,21 @@ function get_all_x11_modes()
         MODE[${id}]="${line}"
     done < <( $XRANDR --verbose | awk '
         # defines the type of line
-        # true is the "header" (output and id)
-        # false is the "description" (Mode: and everything that begins with a space)
+        # true is the "header" (output & id)
+        # false is the "description" (Mode: & everything that begins with a space)
         { type = /^[^ \t]+/ }
 
         # Exit after the first output
-        type && output {exit} # New header and output set means new output
+        type && output {exit} # New header & output set means new output
 
         # many outputs can be connected, but only the ones with the id are in use.
-        # output must be connected and have an (id)
+        # output must be connected & have an (id)
         type && / connected/ && /\(0x[0-9a-f]+\)/ {
             output=${1}; next
         }
 
-        # parse mode and lines
-        # If we are in a "description", and output is set (output being what we want)
+        # parse mode & lines
+        # If we are in a "description", & output is set (output being what we want)
         # And if ${2} is an id, we are in a video mode description line
         !type && output && ${2} ~ /^\(0x[0-9a-f]+\)$/ {
             # Print CRTC identifier (CONNECTOR:0xID)
@@ -296,7 +296,7 @@ function get_all_x11_modes()
             sub(/^[ \t]+/,"") # trim spaces
 
             # save rest of the line
-            info=$0
+            info=${0}
 
             # Save width from the 2nd line of the video mode
             getline; width=${3}
@@ -398,7 +398,7 @@ function get_x11_mode_info() {
     # get mode id
     mode_info[1]="${mode_id[1]}"
 
-    # get status line and split resolution
+    # get status line & split resolution
     status=(${MODE[${mode_id[0]}:${mode_id[1]}]/x/ })
 
     # get resolution
@@ -480,7 +480,7 @@ function default_emulator() {
             key="default"
             ;;
         emu_cmd)
-            key="$EMULATOR"
+            key="${EMULATOR}"
             ;;
         emu_rom_old)
             key="$SYS_SAVE_ROM_OLD"
@@ -546,7 +546,7 @@ function load_mode_defaults() {
         [[ -n "$mode" ]] && MODE_REQ_ID="$mode"
 
         # get default mode for system + rom combination
-        # try the old key first and convert to the new key if found
+        # try the old key first & convert to the new key if found
         mode="$(default_mode get vid_rom_old)"
         if [[ -n "$mode" ]]; then
             default_mode del vid_rom_old
@@ -563,7 +563,7 @@ function load_mode_defaults() {
             [[ -n "$mode" ]] && FB_NEW="$mode"
 
             # get default fb mode for system + rom combination
-            # try the old key first and convert to the new key if found
+            # try the old key first & convert to the new key if found
             mode="$(default_mode get fb_rom_old)"
             if [[ -n "$mode" ]]; then
                 default_mode del fb_rom_old
@@ -609,28 +609,28 @@ function main_menu() {
             local vid_emu="$(default_mode get vid_emu)"
             local vid_rom="$(default_mode get vid_rom)"
             options+=(
-                VE "Select video mode for $EMULATOR ($vid_emu)"
-                VR "Select video mode for $EMULATOR + ROM ($vid_rom)"
+                VE "Select video mode for ${EMULATOR} ($vid_emu)"
+                VR "Select video mode for ${EMULATOR} + ROM ($vid_rom)"
             )
         fi
 
-        if [[ "$EMULATOR" == lr-* ]]; then
+        if [[ "${EMULATOR}" == lr-* ]]; then
             if [[ "$HAS_MODESET" == "tvs" ]]; then
-                options+=(R "Select RetroArch render res for $EMULATOR ($RENDER_RES)")
+                options+=(R "Select RetroArch render res for ${EMULATOR} ($RENDER_RES)")
             fi
             options+=(C "Edit custom RetroArch config for this ROM")
         elif [[ "$HAS_MODESET" == "tvs" ]]; then
             local fb_emu="$(default_mode get fb_emu)"
             local fb_rom="$(default_mode get fb_rom)"
             options+=(
-                FE "Select framebuffer res for $EMULATOR ($fb_emu)"
-                FR "Select framebuffer res for $EMULATOR + ROM ($fb_rom)"
+                FE "Select framebuffer res for ${EMULATOR} ($fb_emu)"
+                FR "Select framebuffer res for ${EMULATOR} + ROM ($fb_rom)"
             )
         fi
 
         options+=(X "Launch")
 
-        if [[ "$EMULATOR" == lr-* ]]; then
+        if [[ "${EMULATOR}" == lr-* ]]; then
             options+=(L "Launch with verbose logging")
             options+=(Z "Launch with netplay enabled")
         fi
@@ -648,7 +648,7 @@ function main_menu() {
             temp_mode="n/a"
         fi
 
-        cmd=(dialog --nocancel --default-item "$default" --menu "System: ${SYSTEM}\nEmulator: $EMULATOR\nVideo Mode: $temp_mode\nROM: $ROM_BN"  22 76 16 )
+        cmd=(dialog --nocancel --default-item "$default" --menu "System: ${SYSTEM}\nEmulator: ${EMULATOR}\nVideo Mode: $temp_mode\nROM: $ROM_BN"  22 76 16 )
         choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
         default="${choice}"
 
@@ -669,11 +669,11 @@ function main_menu() {
                 choose_render_res "render" "$RENDER_RES"
                 ;;
             C)
-                touch "$ROM.cfg"
-                cmd=(dialog --editbox "$ROM.cfg" 22 76)
+                touch "${ROM}.cfg"
+                cmd=(dialog --editbox "${ROM}.cfg" 22 76)
                 choice=$("${cmd[@]}" 2>&1 >/dev/tty)
-                [[ -n "${choice}" ]] && echo "${choice}" >"$ROM.cfg"
-                [[ ! -s "$ROM.cfg" ]] && rm "$ROM.cfg"
+                [[ -n "${choice}" ]] && echo "${choice}" >"${ROM}.cfg"
+                [[ ! -s "${ROM}.cfg" ]] && rm "${ROM}.cfg"
                 ;;
             FE)
                 choose_mode "fb_emu" "$fb_emu"
@@ -695,9 +695,9 @@ function main_menu() {
                 ;;
             U)
                 user_menu
-                local ret="$?"
-                [[ "$ret" -eq 1 ]] && return 1
-                [[ "$ret" -eq 2 ]] && return 0
+                local ret="${?}"
+                [[ "${ret}" -eq 1 ]] && return 1
+                [[ "${ret}" -eq 2 ]] && return 0
                 ;;
             Q)
                 return 1
@@ -729,9 +729,9 @@ function choose_mode() {
     fi
 
     if [[ "$mode" == *_emu ]]; then
-        mode_desc+="$EMULATOR"
+        mode_desc+="${EMULATOR}"
     else
-        mode_desc+="$EMULATOR + ROM ($ROM_BN)"
+        mode_desc+="${EMULATOR} + ROM ($ROM_BN)"
     fi
 
     local menu_title="Choose $mode_desc\nCurrently: "
@@ -881,7 +881,7 @@ function user_menu() {
     while read -r script; do
         script="${script##*/}"
         script="${script%.*}"
-        options+=(${i} "$script")
+        options+=(${i} "${script}")
         ((i++))
     done < <(find "${CONFIGDIR}/all/runcommand-menu" -type f -name "*.sh" | sort)
     local default
@@ -894,9 +894,9 @@ function user_menu() {
         [[ -z "${choice}" ]] && return 0
         default="${choice}"
         script="runcommand-menu/${options[choice*2-1]}.sh"
-        user_script "$script"
-        ret="$?"
-        [[ "$ret" -eq 1 || "$ret" -eq 2 ]] && return "$ret"
+        user_script "${script}"
+        ret="${?}"
+        [[ "${ret}" -eq 1 || "${ret}" -eq 2 ]] && return "${ret}"
     done
 }
 
@@ -955,22 +955,22 @@ _EOF_
             chmod +x "$xinitrc"
 
             # rewrite command to launch our xinit script (if not startx)
-            if ! [[ "$COMMAND" =~ ^startx ]]; then
+            if ! [[ "${COMMAND}" =~ ^startx ]]; then
                 COMMAND="xinit $xinitrc"
             fi
 
             # workaround for launching xserver on correct/user owned tty
             # see https://github.com/RetroPie/RetroPie-Setup/issues/1805
 
-            # if no TTY env var is set, try and get it - eg if launching a ports script or runcommand manually
+            # if no TTY env var is set, try & get it - eg if launching a ports script or runcommand manually
             if [[ -z "$TTY" ]]; then
                 TTY=$(tty)
                 TTY=${TTY:8:1}
             fi
 
-            # if we managed to get the current tty then try and use it
+            # if we managed to get the current tty then try & use it
             if [[ -n "$TTY" ]]; then
-                COMMAND="$COMMAND -- vt$TTY -keeptty"
+                COMMAND="${COMMAND} -- vt$TTY -keeptty"
             fi
             ;;
     esac
@@ -995,7 +995,7 @@ function mode_switch() {
             # inject the environment variables to do modesetting for SDL2 applications
             command_prefix="SDL_VIDEO_KMSDRM_CRTCID=${MODE_CUR[0]} SDL_VIDEO_KMSDRM_MODEID=${MODE_CUR[1]}"
         fi
-        COMMAND="$(echo "$command_prefix $COMMAND" | sed -e "s/;/; $command_prefix /g")"
+        COMMAND="$(echo "$command_prefix ${COMMAND}" | sed -e "s/;/; $command_prefix /g")"
 
         return 0
     elif [[ "$HAS_MODESET" == "x11" ]]; then
@@ -1004,7 +1004,7 @@ function mode_switch() {
         # set target resolution
         $XRANDR --output "${MODE_CUR[0]}" --mode "${MODE_CUR[1]}"
 
-        [[ "$?" -eq 0 ]] && return 0
+        [[ "${?}" -eq 0 ]] && return 0
     elif [[ "$HAS_MODESET" == "tvs" ]]; then
         if [[ "${mode_id[0]}" == "PAL" ]] || [[ "${mode_id[0]}" == "NTSC" ]]; then
             $TVSERVICE -c "${mode_id[*]}" >/dev/null
@@ -1013,7 +1013,7 @@ function mode_switch() {
         fi
 
         # if we have switched mode, switch the framebuffer resolution also
-        if [[ "$?" -eq 0 ]]; then
+        if [[ "${?}" -eq 0 ]]; then
             sleep 1
             clear
             MODE_CUR=($(get_${HAS_MODESET}_mode_info))
@@ -1031,10 +1031,10 @@ function mode_switch() {
 # }
 
 function config_backend() {
-    # if we are running under X then don't try and use a different backend
+    # if we are running under X then don't try & use a different backend
     [[ -n "$DISPLAY" || "$XINIT" -eq 1 ]] && return
     local name="${1}"
-    # if we have a backends.conf file and with an entry for the current emulator name,
+    # if we have a backends.conf file & with an entry for the current emulator name,
     # change the library path to load dispmanx sdl first
     if [[ -f "$BACKENDS_CONF" ]]; then
         iniConfig " = " '"' "$BACKENDS_CONF"
@@ -1042,9 +1042,9 @@ function config_backend() {
         case "$ini_value" in
             1|dispmanx)
                 if [[ "$HAS_MODESET" == "kms" ]]; then
-                    COMMAND="SDL_DISPMANX_WIDTH=${MODE_CUR[2]} SDL_DISPMANX_HEIGHT=${MODE_CUR[3]} $COMMAND"
+                    COMMAND="SDL_DISPMANX_WIDTH=${MODE_CUR[2]} SDL_DISPMANX_HEIGHT=${MODE_CUR[3]} ${COMMAND}"
                 fi
-                COMMAND="SDL1_VIDEODRIVER=dispmanx $COMMAND"
+                COMMAND="SDL1_VIDEODRIVER=dispmanx ${COMMAND}"
                 ;;
             x11)
                 XINIT=1
@@ -1063,7 +1063,7 @@ function retroarch_append_config() {
     local dim
 
     # only for retroarch emulators
-    [[ "$EMULATOR" != lr-* ]] && return
+    [[ "${EMULATOR}" != lr-* ]] && return
 
     # make sure tmp folder exists for unpacking archives
     mkdir -p "/tmp/retroarch"
@@ -1095,7 +1095,7 @@ function retroarch_append_config() {
     fi
 
     # set `libretro_directory` to the core parent folder
-    local core_dir=$(echo "$COMMAND" | grep -Eo "$ROOTDIR/libretrocores/.*libretro\.so" | head -n 1)
+    local core_dir=$(echo "${COMMAND}" | grep -Eo "$ROOTDIR/libretrocores/.*libretro\.so" | head -n 1)
     core_dir=$(dirname "$core_dir")
     [[ -n "$core_dir" ]] && iniSet "libretro_directory" "$core_dir"
 
@@ -1106,13 +1106,13 @@ function retroarch_append_config() {
     [[ "$VERBOSE" -eq 1 ]] && iniSet "libretro_log_level" "1"
 
     # if the ROM has a custom configuration then append that too
-    if [[ -f "$ROM.cfg" ]]; then
-        conf+="'|'\"$ROM.cfg\""
+    if [[ -f "${ROM}.cfg" ]]; then
+        conf+="'|'\"${ROM}.cfg\""
     fi
 
     # if we already have an existing appendconfig parameter, we need to add our configs to that
-    if [[ "$COMMAND" =~ "--appendconfig" ]]; then
-        COMMAND=$(echo "$COMMAND" | sed "s#\(--appendconfig *[^ $]*\)#\1'|'$conf#")
+    if [[ "${COMMAND}" =~ "--appendconfig" ]]; then
+        COMMAND=$(echo "${COMMAND}" | sed "s#\(--appendconfig *[^ $]*\)#\1'|'$conf#")
     else
         COMMAND+=" --appendconfig $conf"
     fi
@@ -1159,13 +1159,13 @@ function get_sys_command() {
         start_joy2key
         choose_emulator "emu_sys" "" "--nocancel"
         stop_joy2key
-        get_sys_command "${SYSTEM}" "$ROM"
+        get_sys_command "${SYSTEM}" "${ROM}"
         return
     fi
     EMULATOR="$emulator"
 
     # get default emulator for system + rom combination
-    # try the old key first and convert to the new key if found
+    # try the old key first & convert to the new key if found
     emulator="$(default_emulator get emu_rom_old)"
 
     if [[ -n "$emulator" ]]; then
@@ -1180,7 +1180,7 @@ function get_sys_command() {
     COMMAND="$(default_emulator get emu_cmd)"
 
     # replace tokens
-    COMMAND="${COMMAND//\%ROM\%/\"$ROM\"}"
+    COMMAND="${COMMAND//\%ROM\%/\"${ROM}\"}"
     COMMAND="${COMMAND//\%BASENAME\%/\"$ROM_BN\"}"
 
     # special case to get the last 2 folders for quake games for the -game parameter
@@ -1259,9 +1259,9 @@ function show_launch() {
     elif [[ "$DISABLE_MENU" -ne 1 && "${USE_ART}" -ne 1 ]]; then
         local launch_name
         if [[ -n "$ROM_BN" ]]; then
-            launch_name="$ROM_BN ($EMULATOR)"
+            launch_name="$ROM_BN (${EMULATOR})"
         else
-            launch_name="$EMULATOR"
+            launch_name="${EMULATOR}"
         fi
         DIALOGRC="${CONFIGDIR}/all/runcommand-launch-dialog.cfg" dialog --infobox "\nLaunching ${launch_name} ...\n\nPress A Button To Configure\n\nErrors Are Logged To ${LOG}" 9 60
     fi
@@ -1269,24 +1269,24 @@ function show_launch() {
 
 function check_menu() {
     local dont_launch=0
-    # check for key pressed to enter configuration
+    # Check for key pressed to enter configuration
     IFS= read -s -t 2 -N 1 key </dev/tty
     if [[ -n "${key}" ]]; then
-        [[ -n "$IMG_PID" ]] && kill -SIGINT "$IMG_PID"
+        [[ -n "${IMG_PID}" ]] && kill -SIGINT "${IMG_PID}"
         tput cnorm
         main_menu
-        dont_launch=$?
+        dont_launch=${?}
         tput civis
         clear
     fi
-    return $dont_launch
+    return ${dont_launch}
 }
 
-# calls script with parameters SYSTEM, EMULATOR, ROM, and commandline
+# Calls script with parameters SYSTEM, EMULATOR, ROM, & commandline
 function user_script() {
     local script="${CONFIGDIR}/all/${1}"
-    if [[ -f "$script" ]]; then
-        bash "$script" "${SYSTEM}" "$EMULATOR" "$ROM" "$COMMAND" </dev/tty 2>>"$LOG"
+    if [[ -f "${script}" ]]; then
+        bash "${script}" "${SYSTEM}" "${EMULATOR}" "${ROM}" "${COMMAND}" </dev/tty 2>>"${LOG}"
     fi
 }
 
@@ -1319,23 +1319,23 @@ function launch_command() {
 }
 
 function log_info() {
-    echo -e "${SYSTEM}\n$EMULATOR\n$ROM\n$COMMAND" >/dev/shm/runcommand.info
+    echo -e "${SYSTEM}\n${EMULATOR}\n${ROM}\n${COMMAND}" >/dev/shm/runcommand.info
 }
 
 function runcommand() {
     get_config
 
     if ! get_params "${@}"; then
-        echo "$0 MODE COMMAND [SAVENAME]"
-        echo "$0 MODE _SYS_/_PORT_ SYSTEM ROM"
+        echo "${0} MODE COMMAND [SAVENAME]"
+        echo "${0} MODE _SYS_/_PORT_ SYSTEM ROM"
         exit 1
     fi
 
-    # turn off cursor and clear screen
+    # turn off cursor & clear screen
     tput civis
     clear
 
-    rm -f "$LOG"
+    rm -f "${LOG}"
     log_info
     user_script "runcommand-onstart.sh"
 
@@ -1358,12 +1358,12 @@ function runcommand() {
 
     mode_switch "$MODE_REQ_ID"
 
-    # replace X/Y resolution and refresh (useful for KMS/modesetting)
+    # replace X/Y resolution & refresh (useful for KMS/modesetting)
     COMMAND="${COMMAND//\%XRES\%/${MODE_CUR[2]}}"
     COMMAND="${COMMAND//\%YRES\%/${MODE_CUR[3]}}"
     COMMAND="${COMMAND//\%REFRESH\%/${MODE_CUR[5]}}"
 
-    # resave info after menu and resolution replacements so runcommand.info is up to date
+    # resave info after menu & resolution replacements so runcommand.info is up to date
     log_info
 
     #[[ -n "$FB_NEW" ]] && switch_fb_res $FB_NEW
@@ -1375,7 +1375,7 @@ function runcommand() {
 
     retroarch_append_config
 
-    # build xinitrc and rewrite command if not already in X11 context
+    # build xinitrc & rewrite command if not already in X11 context
     if [[ "$XINIT" -eq 1 && "$HAS_MODESET" != "x11" ]]; then
         build_xinitrc build
     fi
@@ -1384,9 +1384,9 @@ function runcommand() {
 
     local ret
     launch_command "${@}"
-    ret=$?
+    ret=${?}
 
-    [[ -n "$IMG_PID" ]] && kill -SIGINT "$IMG_PID"
+    [[ -n "${IMG_PID}" ]] && kill -SIGINT "${IMG_PID}"
 
     clear
 
@@ -1407,11 +1407,11 @@ function runcommand() {
     # reset/restore framebuffer res (if it was changed)
     [[ -n "$FB_NEW" ]] && restore_fb
 
-    [[ "$EMULATOR" == lr-* ]] && retroarchIncludeToEnd "${CONF_ROOT}/retroarch.cfg"
+    [[ "${EMULATOR}" == lr-* ]] && retroarchIncludeToEnd "${CONF_ROOT}/retroarch.cfg"
 
     user_script "runcommand-onend.sh"
 
-    restore_cursor_and_exit "$ret"
+    restore_cursor_and_exit "${ret}"
 }
 
 runcommand "${@}"

@@ -102,7 +102,7 @@ function list_available_bluetooth() {
     done < <(list_paired_bluetooth)
 
     # Dualshock Controller: Add USB Pairing Information
-    [[ -n "$(lsmod | grep hid_sony)" ]] && info_text="Searching ...\n\nDualShock Registration: While this text is visible, unplug the controller, press the PS/SHARE button, and then replug the controller."
+    [[ -n "$(lsmod | grep hid_sony)" ]] && info_text="Searching ...\n\nDualShock Registration: While this text is visible, unplug the controller, press the PS/SHARE button, & then replug the controller."
 
     dialog --backtitle "${__backtitle}" --infobox "${info_text}" 7 60 >/dev/tty
     if hasPackage bluez; then

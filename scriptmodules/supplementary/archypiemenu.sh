@@ -64,17 +64,17 @@ function configure_archypiemenu() {
         )
 
         local descs=(
-            'Configure audio settings. Choose default of auto, 3.5mm jack, or HDMI. Mixer controls, and apply default settings.'
-            'Register and connect to Bluetooth devices. Unregister and remove devices, and display registered and connected devices.'
-            'Change common RetroArch options, and manually edit RetroArch configs, global configs, and non-RetroArch configs.'
+            'Configure audio settings. Choose default of auto, 3.5mm jack, or HDMI. Mixer controls, & apply default settings.'
+            'Register & connect to Bluetooth devices. Unregister & remove devices, & display registered & connected devices.'
+            'Change common RetroArch options, & manually edit RetroArch configs, global configs, & non-RetroArch configs.'
             'Install, uninstall, or update EmulationStation themes. Most themes can be previewed at https://retropie.org.uk/docs/Themes/.'
-            'Basic ASCII file manager for Linux allowing you to browse, copy, delete, and move files.'
+            'Basic ASCII file manager for Linux allowing you to browse, copy, delete, & move files.'
             'Launches the RetroArch GUI so you can change RetroArch options. Note: Changes will not be saved unless you have enabled the "Save Configuration On Exit" option.'
-            'Set up RetroArch Netplay options, choose host or client, port, host IP, delay frames, and your nickname.'
+            'Set up RetroArch Netplay options, choose host or client, port, host IP, delay frames, & your nickname.'
             'Install EmptyPie from binary or source, install experimental packages, additional drivers, edit Samba shares, custom scraper, as well as other EmptyPie-related configurations.'
-            'Change what appears on the runcommand screen. Enable or disable the menu, enable or disable box art, and change CPU configuration.'
+            'Change what appears on the runcommand screen. Enable or disable the menu, enable or disable box art, & change CPU configuration.'
             'Displays your current IP address, as well as other information provided by the command "ip addr show."'
-            'Connect to or disconnect from a Wi-Fi network and configure Wi-Fi settings.'
+            'Connect to or disconnect from a Wi-Fi network & configure Wi-Fi settings.'
         )
 
         setESSystem "EmptyPie" "emptypie" "${rpdir}" ".rp .sh" "sudo ${scriptdir}/archypie_packages.sh archypiemenu launch %ROM%" "" "emptypie"

@@ -252,9 +252,9 @@ function gui_wifi() {
             1 "Connect To Wi-Fi Network"
             "1 Connect to your Wi-Fi network"
             2 "Disconnect/Remove Wi-Fi Config"
-            "2 Disconnect and remove any Wi-Fi configuration"
+            "2 Disconnect & remove any Wi-Fi configuration"
             3 "Import WiFi Credentials From /boot/wifikeyfile.txt"
-            "3 Will import the SSID (network name) and PSK (password) from a file at /boot/wifikeyfile.txt
+            "3 Will import the SSID (network name) & PSK (password) from a file at /boot/wifikeyfile.txt
 
 The file should contain two lines as follows\n\nssid = \"YOUR WIFI SSID\"\npsk = \"YOUR PASSWORD\""
         )
@@ -275,7 +275,7 @@ The file should contain two lines as follows\n\nssid = \"YOUR WIFI SSID\"\npsk =
                     connect_wifi "${iface}"
                     ;;
                 2)
-                    dialog --defaultno --yesno "This will remove the Wi-Fi configuration and stop the Wi-Fi.\n\nAre you sure you want to continue?" 12 60 2>&1 >/dev/tty
+                    dialog --defaultno --yesno "This will remove the Wi-Fi configuration & stop the Wi-Fi.\n\nAre you sure you want to continue?" 12 60 2>&1 >/dev/tty
                     [[ ${?} -ne 0 ]] && continue
                     remove_"${mgmt_tool}"_wifi "${iface}"
                     ;;

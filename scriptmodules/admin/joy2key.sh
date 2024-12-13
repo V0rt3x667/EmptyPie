@@ -51,7 +51,7 @@ params=("\${@}")
 if [[ "\${#params[@]}" -eq 0 ]]; then
     # Default button-to-keyboard mappings:
     # * cursor keys for axis/dpad
-    # * enter, space, esc and tab for buttons 'a', 'b', 'x' and 'y'
+    # * enter, space, esc & tab for buttons 'a', 'b', 'x' & 'y'
     # * page up/page down for buttons 5,6 (shoulder buttons)
     params=(kcub1 kcuf1 kcuu1 kcud1 0x0a 0x20 0x1b 0x09 kpp knp)
 fi

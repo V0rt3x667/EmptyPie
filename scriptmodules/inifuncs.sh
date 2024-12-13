@@ -10,7 +10,7 @@
 
 # @fn fatalError()
 # @param message string or array of messages to display
-# @brief echos message, and exits immediately.
+# @brief echos message, & exits immediately.
 function fatalError() {
     echo -e "${1}"
     exit 1
@@ -22,7 +22,7 @@ function fatalError() {
 ## @param delim ini file delimiter eg. ' = '
 ## @param quote ini file quoting character eg. '"'
 ## @param config ini file to edit
-## @brief Configure an ini file for getting/setting values with `iniGet` and `iniSet`
+## @brief Configure an ini file for getting/setting values with `iniGet` & `iniSet`
 function iniConfig() {
     __ini_cfg_delim="${1}"
     __ini_cfg_quote="${2}"
@@ -36,8 +36,8 @@ function iniConfig() {
 # @param key ini key to operate on
 # @param value to set
 # @param file optional file to use another file than the one configured with iniConfig
-# @brief The main function for setting and deleting from ini files - usually
-# not called directly but via iniSet iniUnset and iniDel
+# @brief The main function for setting & deleting from ini files - usually
+# not called directly but via iniSet iniUnset & iniDel
 function iniProcess() {
     local cmd="${1}"
     local key="${2}"
@@ -153,7 +153,7 @@ function iniGet() {
 # @fn retroarchIncludeToEnd()
 # @param file config file to process
 # @brief Makes sure a `retroarch.cfg` file has the `#include` line at the end.
-# @details Used in runcommand.sh and iniProcess to ensure the #include for the
+# @details Used in runcommand.sh & iniProcess to ensure the #include for the
 # main retroarch.cfg is always at the end of a system `retroarch.cfg`. This
 # is because when processing its config RetroArch will take the first value it
 # finds, so any overrides need to be above the `#include` line where the global
@@ -166,13 +166,13 @@ function retroarchIncludeToEnd() {
     local re="^#include.*retroarch\.cfg"
 
     # Extract the include line (unless it is the last line in the file)
-    # (remove blank lines, the last line and search for an include line in remaining lines)
+    # (remove blank lines, the last line & search for an include line in remaining lines)
     local include=$(sed '/^$/d;$d' "${config}" | grep "$re")
 
-    # If matched remove it and re-add it at the end
+    # If matched remove it & re-add it at the end
     if [[ -n "${include}" ]]; then
         sed -i --follow-symlinks "/$re/d" "${config}"
-        # add newline if missing and the #include line
+        # add newline if missing & the #include line
         sed -i --follow-symlinks '$a\' "${config}"
         echo "${include}" >>"${config}"
     fi

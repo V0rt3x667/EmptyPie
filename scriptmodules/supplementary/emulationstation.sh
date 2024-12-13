@@ -264,7 +264,7 @@ clear
 tput civis
 "${md_inst}/emulationstation.sh" "\${@}"
 if [[ \${?} -eq 139 ]]; then
-    dialog --cr-wrap --no-collapse --msgbox "EmulationStation Crashed!\n\nIf this is your first boot of EmptyPie, make sure you are using the correct image for your system.\n\\nCheck your rom file/folder permissions and if running on a Raspberry Pi, make sure your gpu_split is set high enough and/or switch back to using the Carbon theme." 20 60 >/dev/tty
+    dialog --cr-wrap --no-collapse --msgbox "EmulationStation Crashed!\n\nIf this is your first boot of EmptyPie, make sure you are using the correct image for your system.\n\\nCheck your rom file/folder permissions & if running on a Raspberry Pi, make sure your gpu_split is set high enough &/or switch back to using the Carbon theme." 20 60 >/dev/tty
 fi
 tput cnorm
 _EOF_
@@ -367,7 +367,7 @@ function gui_emulationstation() {
 
         case "${choice}" in
             1)
-                if dialog --defaultno --yesno "Are you sure you want to reset the EmulationStation controller configuration? This will wipe all controller configs for ES and it will prompt to reconfigure on next start." 22 76 2>&1 >/dev/tty; then
+                if dialog --defaultno --yesno "Are you sure you want to reset the EmulationStation controller configuration? This will wipe all controller configs for ES & it will prompt to reconfigure on next start." 22 76 2>&1 >/dev/tty; then
                     clear_input_emulationstation
                     printMsgs "dialog" "$(_get_input_cfg_emulationstation) has been reset to default values."
                 fi

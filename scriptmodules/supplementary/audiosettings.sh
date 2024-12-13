@@ -25,7 +25,7 @@ function gui_audiosettings() {
     # The list of ALSA cards/devices depends on the 'snd-bcm2385' module parameter 'enable_compat_alsa'
     # * enable_compat_alsa: true  - single soundcard, output is routed based on the `numid` control
     # * enable_compat_alsa: false - one soundcard per output type (HDMI/Headphones)
-    # When PulseAudio/PipeWire is enabled, try to configure it and leave ALSA alone
+    # When PulseAudio/PipeWire is enabled, try to configure it & leave ALSA alone
     if _pa_cmd_audiosettings systemctl -q --user is-enabled {pulseaudio,pipewire-pulse}.service; then
         _pulseaudio_audiosettings
     elif aplay -l | grep -q "bcm2835 ALSA"; then
