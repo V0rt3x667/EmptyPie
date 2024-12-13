@@ -178,6 +178,9 @@ function hasPackage() {
     if [[ "${?}" -eq 0 ]]; then
         ver="${out##*-}"
         status="Installed"
+    elif [[ "${?}" -gt 0 ]]; then
+        ver="${out##*-}"
+        status="Not Installed"
     fi
 
     local installed=0
