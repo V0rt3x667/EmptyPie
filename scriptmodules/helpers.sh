@@ -181,7 +181,7 @@ function hasPackage() {
     fi
 
     local installed=0
-    [[ "${status}" == *"Installed" ]] && installed=1
+    [[ "${status}" == "Installed" ]] && installed=1
     # If we are not checking version
     if [[ -z "${req_ver}" ]]; then
         # If the package is installed return true
