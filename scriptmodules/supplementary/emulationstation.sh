@@ -129,28 +129,27 @@ function depends_emulationstation() {
         'cmake'
         'curl'
         'freeimage'
-        'freetype2'
-        'libsm'
-        'lld'
+        'freetype'
+        'mold'
         'ninja'
         'pugixml'
         'rapidjson'
-        'sdl2'
+        'SDL2'
         'vlc'
     )
-    isPlatform "x11" && depends+=('gnome-terminal' 'mesa-utils')
+    isPlatform "x11" && depends+=('gnome-terminal' 'mesa-demos')
     getDepends "${depends[@]}"
 }
 
 function sources_emulationstation() {
     gitPullOrClone
 
-    # Set Build Directory
+    # Set the build directory
     sed -e "s|set(dir \${CMAKE_CURRENT_SOURCE_DIR})|set(dir ${md_build}/build)|g" -i "${md_build}/CMakeLists.txt"
 }
 
 function build_emulationstation() {
-    local params=('-DFREETYPE_INCLUDE_DIRS=/usr/include/freetype2/')
+    #local params=('-DFREETYPE_INCLUDE_DIRS=/usr/include/freetype2/')
 
     if isPlatform "rpi"; then
         params+=('-DRPI=ON')
@@ -184,12 +183,10 @@ function build_emulationstation() {
         -G"Ninja" \
         -DCMAKE_BUILD_RPATH_USE_ORIGIN="ON" \
         -DCMAKE_BUILD_TYPE="Release" \
-        -DCMAKE_INSTALL_PREFIX="${md_inst}" \
         -DCMAKE_C_COMPILER="clang" \
         -DCMAKE_CXX_COMPILER="clang++" \
-        -DCMAKE_EXE_LINKER_FLAGS_INIT="-fuse-ld=lld" \
-        -DCMAKE_MODULE_LINKER_FLAGS_INIT="-fuse-ld=lld" \
-        -DCMAKE_SHARED_LINKER_FLAGS_INIT="-fuse-ld=lld" \
+        -DCMAKE_INSTALL_PREFIX="${md_inst}" \
+        -DCMAKE_LINKER_TYPE="MOLD" \
         "${params[@]}" \
         -Wno-dev
     ninja -C build clean
