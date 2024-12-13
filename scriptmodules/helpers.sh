@@ -470,7 +470,6 @@ function setupDirectories() {
     mkUserDir "$datadir"
     mkUserDir "$romdir"
     mkUserDir "$biosdir"
-    mkUserDir "$empdir"
     mkUserDir "$savedir"
     mkUserDir "${configdir}"
     mkUserDir "${configdir}/all"
