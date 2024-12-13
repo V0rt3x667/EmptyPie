@@ -167,21 +167,25 @@ function inputBox() {
 ## @retval 0 if the requested package / version was installed
 ## @retval 1 if the requested package / version was not installed
 function hasPackage() {
-    local pkg="${1}"
+    local pkgs="${1}"
     local req_ver="${2}"
     local comp="${3}"
     [[ -z "${comp}" ]] && comp="ge"
 
-    local ver
+    local out
+    local pkg
     local status
-    local out="$(xbps-query -p pkgver ${pkg} 2>/dev/null)"
-    if [[ "${?}" -eq 0 ]]; then
+    local ver
+
+    for pkg in "${pkgs[@]}"; do
+        out="$(xbps-query -p pkgver "${pkg}" 2>/dev/null)"
         ver="${out##*-}"
-        status="Installed"
-    elif [[ "${?}" -gt 0 ]]; then
-        ver="${out##*-}"
-        status="Not Installed"
-    fi
+        if [[ "${?}" -eq 0 ]]; then
+            status="Installed"
+        else
+            status="Not Installed"
+        fi
+    done
 
     local installed=0
     [[ "${status}" == "Installed" ]] && installed=1
