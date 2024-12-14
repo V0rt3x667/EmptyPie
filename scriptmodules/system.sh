@@ -178,7 +178,7 @@ function get_emptypie_depends() {
         'perl-rename'
         'python3-pyudev'
         'unzip'
-        'xmlstarlet'
+        'xml'
 )
     [[ -n "${DISTCC_HOSTS}" ]] && depends+=('distcc')
 

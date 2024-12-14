@@ -68,16 +68,16 @@ function inputconfiguration() {
             local input=(${line})
             mapping["${input[0]}"]=${input[@]:1}
         fi
-    done < <(xmlstarlet sel --text -t -m "/inputList/inputConfig/input"  -v "concat(@name,' ',@type,' ',@id,' ',@value)" -n "$es_conf")
+    done < <(xml sel --text -t -m "/inputList/inputConfig/input"  -v "concat(@name,' ',@type,' ',@id,' ',@value)" -n "$es_conf")
 
     local inputscriptdir=$(dirname "${0}")
     local inputscriptdir=$(cd "$inputscriptdir" && pwd)
 
-    DEVICE_TYPE=$(xmlstarlet sel --text -t -v "/inputList/inputConfig/@type" "$es_conf")
-    DEVICE_NAME=$(xmlstarlet sel --text -t -v "/inputList/inputConfig/@deviceName" "$es_conf")
-    DEVICE_GUID=$(xmlstarlet sel --text -t -v "/inputList/inputConfig/@deviceGUID" "$es_conf")
-    VENDOR_ID=$(xmlstarlet sel --text -t -v "/inputList/inputConfig/@vendorId" "$es_conf")
-    PRODUCT_ID=$(xmlstarlet sel --text -t -v "/inputList/inputConfig/@productId" "$es_conf")
+    DEVICE_TYPE=$(xml sel --text -t -v "/inputList/inputConfig/@type" "$es_conf")
+    DEVICE_NAME=$(xml sel --text -t -v "/inputList/inputConfig/@deviceName" "$es_conf")
+    DEVICE_GUID=$(xml sel --text -t -v "/inputList/inputConfig/@deviceGUID" "$es_conf")
+    VENDOR_ID=$(xml sel --text -t -v "/inputList/inputConfig/@vendorId" "$es_conf")
+    PRODUCT_ID=$(xml sel --text -t -v "/inputList/inputConfig/@productId" "$es_conf")
 
     echo "Input type is '$DEVICE_TYPE'."
 
