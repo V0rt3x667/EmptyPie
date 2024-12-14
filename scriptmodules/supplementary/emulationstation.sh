@@ -26,7 +26,7 @@ function _update_hook_emulationstation() {
 function _sort_systems_emulationstation() {
     local field="${1}"
     cp "/etc/emulationstation/es_systems.cfg" "/etc/emulationstation/es_systems.cfg.bak"
-    xmlstarlet sel -D -I \
+    xml sel -D -I \
         -t -m "/" -e "systemList" \
         -m "//system" -s A:T:U "${field}" -c "." \
         "/etc/emulationstation/es_systems.cfg.bak" >"/etc/emulationstation/es_systems.cfg"
@@ -48,8 +48,8 @@ function _add_system_emulationstation() {
     fi
 
     cp "${conf}" "${conf}.bak"
-    if [[ $(xmlstarlet sel -t -v "count(/systemList/system[name='${name}'])" "${conf}") -eq 0 ]]; then
-        xmlstarlet ed -L -s "/systemList" -t elem -n "system" -v "" \
+    if [[ $(xml sel -t -v "count(/systemList/system[name='${name}'])" "${conf}") -eq 0 ]]; then
+        xml ed -L -s "/systemList" -t elem -n "system" -v "" \
             -s "/systemList/system[last()]" -t elem -n "name" -v "${name}" \
             -s "/systemList/system[last()]" -t elem -n "fullname" -v "${fullname}" \
             -s "/systemList/system[last()]" -t elem -n "path" -v "${path}" \
@@ -59,7 +59,7 @@ function _add_system_emulationstation() {
             -s "/systemList/system[last()]" -t elem -n "theme" -v "${theme}" \
             "${conf}"
     else
-        xmlstarlet ed -L \
+        xml ed -L \
             -u "/systemList/system[name='${name}']/fullname" -v "${fullname}" \
             -u "/systemList/system[name='${name}']/path" -v "${path}" \
             -u "/systemList/system[name='${name}']/extension" -v "${extension}" \
@@ -71,7 +71,7 @@ function _add_system_emulationstation() {
 
     # Alert The User If They Have A Custom "es_systems.cfg" Which Doesn't Contain The System We Are Adding
     local conf_local="${configdir}/all/emulationstation/es_systems.cfg"
-    if [[ -f "${conf_local}" ]] && [[ "$(xmlstarlet sel -t -v "count(/systemList/system[name='${name}'])" "${conf_local}")" -eq 0 ]]; then
+    if [[ -f "${conf_local}" ]] && [[ "$(xml sel -t -v "count(/systemList/system[name='${name}'])" "${conf_local}")" -eq 0 ]]; then
         md_ret_info+=("You Have A Custom Override Of The EmulationStation System Config In:\n\n${conf_local}\n\nYou Will Need To Copy The Updated ${system} Config From ${conf} To Your Custom Config For ${system} To Show Up In EmulationStation.")
     fi
 
@@ -82,7 +82,7 @@ function _del_system_emulationstation() {
     local fullname="${1}"
     local name="${2}"
     if [[ -f "/etc/emulationstation/es_systems.cfg" ]]; then
-        xmlstarlet ed -L -P -d "/systemList/system[name='${name}']" "/etc/emulationstation/es_systems.cfg"
+        xml ed -L -P -d "/systemList/system[name='${name}']" "/etc/emulationstation/es_systems.cfg"
     fi
 }
 
@@ -105,15 +105,15 @@ function _add_rom_emulationstation() {
         echo "<gameList />" >"${config}"
     fi
 
-    if [[ $(xmlstarlet sel -t -v "count(/gameList/game[path='${path}'])" "${config}") -eq 0 ]]; then
-        xmlstarlet ed -L -s "/gameList" -t elem -n "game" -v "" \
+    if [[ $(xml sel -t -v "count(/gameList/game[path='${path}'])" "${config}") -eq 0 ]]; then
+        xml ed -L -s "/gameList" -t elem -n "game" -v "" \
             -s "/gameList/game[last()]" -t elem -n "path" -v "${path}" \
             -s "/gameList/game[last()]" -t elem -n "name" -v "${name}" \
             -s "/gameList/game[last()]" -t elem -n "desc" -v "${desc}" \
             -s "/gameList/game[last()]" -t elem -n "image" -v "${image}" \
             "${config}"
     else
-        xmlstarlet ed -L \
+        xml ed -L \
             -u "/gameList/game[name='${name}']/path" -v "${path}" \
             -u "/gameList/game[name='${name}']/name" -v "${name}" \
             -u "/gameList/game[name='${name}']/desc" -v "${desc}" \
@@ -127,15 +127,16 @@ function depends_emulationstation() {
     local depends=(
         'clang'
         'cmake'
-        'curl'
-        'freeimage'
-        'freetype'
+        'freeimage-devel'
+        'freetype-devel'
+        'libcurl-devel'
+        'MesaLib-devel'
         'mold'
         'ninja'
         'pugixml'
         'rapidjson'
-        'SDL2'
-        'vlc'
+        'SDL2-devel'
+        'vlc-devel'
     )
     isPlatform "x11" && depends+=('gnome-terminal' 'mesa-demos')
     getDepends "${depends[@]}"
@@ -217,14 +218,14 @@ function init_input_emulationstation() {
     fi
 
     # Add Or Update "inputconfiguration.sh" "inputAction"
-    if [[ $(xmlstarlet sel -t -v "count(/inputList/inputAction[@type='onfinish'])" "${es_config}") -eq 0 ]]; then
-        xmlstarlet ed -L -S \
+    if [[ $(xml sel -t -v "count(/inputList/inputAction[@type='onfinish'])" "${es_config}") -eq 0 ]]; then
+        xml ed -L -S \
             -s "/inputList" -t elem -n "inputActionTMP" -v "" \
             -s "//inputActionTMP" -t attr -n "type" -v "onfinish" \
             -s "//inputActionTMP" -t elem -n "command" -v "${md_inst}/scripts/inputconfiguration.sh" \
             -r "//inputActionTMP" -v "inputAction" "${es_config}"
     else
-        xmlstarlet ed -L \
+        xml ed -L \
             -u "/inputList/inputAction[@type='onfinish']/command[1]" -v "${md_inst}/scripts/inputconfiguration.sh" \
             "${es_config}"
     fi
