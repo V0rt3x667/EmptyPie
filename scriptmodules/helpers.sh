@@ -50,7 +50,7 @@ function fatalError() {
 # @retval 1 if the function name does not exist
 function fnExists() {
     declare -f "${1}" > /dev/null
-    return $?
+    return ${?}
 }
 
 function ask() {
@@ -68,7 +68,7 @@ function ask() {
 function runCmd() {
     local ret
     "${@}"
-    ret=$?
+    ret=${?}
     if [[ "${ret}" -ne 0 ]]; then
         md_ret_errors+=("Error running '${*}' - returned ${ret}")
     fi
@@ -147,10 +147,10 @@ function inputBox() {
 
     if [[ -f "${osk}" ]]; then
         params+=(--minchars "${minchars}")
-        text=$(python "${osk}" "${params[@]}" "${text}" 2>&1 >/dev/tty) || return $?
+        text=$(python "${osk}" "${params[@]}" "${text}" 2>&1 >/dev/tty) || return ${?}
     else
         while true; do
-            text=$(dialog "${params[@]}" 10 60 "${text}" 2>&1 >/dev/tty) || return $?
+            text=$(dialog "${params[@]}" 10 60 "${text}" 2>&1 >/dev/tty) || return ${?}
             [[ "${#text}" -ge "${minchars}" ]] && break
             dialog --msgbox "${title} must have at least ${minchars} characters" 8 60 2>&1 >/dev/tty
         done
@@ -220,7 +220,7 @@ function xbpsUpdate() {
 function xbpsInstall() {
     xbpsUpdate
     xbps-install -S -y "${@}"
-    return $?
+    return ${?}
 }
 
 ## @fn xbpsRemove()
@@ -229,7 +229,7 @@ function xbpsInstall() {
 function xbpsRemove() {
     xbpsUpdate
     xbps-remove -R -y "${@}"
-    return $?
+    return ${?}
 }
 
 function _mapPackage() {
@@ -587,7 +587,7 @@ function moveConfigFile() {
 ## @retval >1 an error occurred
 function diffFiles() {
     diff -q "${1}" "${2}" >/dev/null
-    return $?
+    return ${?}
 }
 
 ## @fn compareVersions()
@@ -598,7 +598,7 @@ function diffFiles() {
 ## @retval 1 if the comparison was false
 function compareVersions() {
     dpkg --compare-versions "${1}" "${2}" "${3}" >/dev/null
-    return $?
+    return ${?}
 }
 
 ## @fn dirIsEmpty()
@@ -761,17 +761,17 @@ function iniFileEditor() {
             else
                 # get current value
                 iniGet "${key}"
-                if [[ -n "$ini_value" ]]; then
-                    value="$ini_value"
+                if [[ -n "${ini_value}" ]]; then
+                    value="${ini_value}"
                 else
                     value="unset"
                 fi
             fi
 
-            values+=("$value")
+            values+=("${value}")
 
             # add the matching value to our id in _id_ lists
-            if [[ "${option[1]}" == "_id_" && "$value" != "unset" ]]; then
+            if [[ "${option[1]}" == "_id_" && "${value}" != "unset" ]]; then
                 value+=" - ${option[value+2]}"
             fi
 
@@ -782,7 +782,7 @@ function iniFileEditor() {
                 title="${key}"
             fi
 
-            options+=("${i}" "$title ($value)" "${ini_descs[i]}")
+            options+=("${i}" "$title (${value})" "${ini_descs[i]}")
 
             ((i++))
         done
@@ -812,7 +812,7 @@ function iniFileEditor() {
 
         local mode="${params[0]}"
 
-        case "$mode" in
+        case "${mode}" in
             _string_)
                 options+=("E" "Edit (Currently ${values[sel]})")
                 ;;
@@ -828,9 +828,9 @@ function iniFileEditor() {
                 done < <(find -L "${path}" -type f -name "$match" | sort)
                 ;;
             _id_|*)
-                [[ "$mode" == "_id_" ]] && params=("${params[@]:1}")
+                [[ "${mode}" == "_id_" ]] && params=("${params[@]:1}")
                 for option in "${params[@]}"; do
-                    if [[ "$mode" == "_id_" ]]; then
+                    if [[ "${mode}" == "_id_" ]]; then
                         [[ "${values[sel]}" == "${i}" ]] && default="${i}"
                     else
                         [[ "${values[sel]}" == "$option" ]] && default="${i}"
@@ -840,9 +840,9 @@ function iniFileEditor() {
                 done
                 ;;
         esac
-        [[ -z "$default" ]] && default="U"
+        [[ -z "${default}" ]] && default="U"
         # display values
-        cmd=(dialog --backtitle "$__backtitle" --default-item "$default" --menu "Please Choose The Value For ${keys[sel]}" 22 76 16)
+        cmd=(dialog --backtitle "$__backtitle" --default-item "${default}" --menu "Please Choose The Value For ${keys[sel]}" 22 76 16)
         local choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
 
         # if it is a _string_ type we will open an inputbox dialog to get a manual value
@@ -855,12 +855,12 @@ function iniFileEditor() {
         elif [[ "${choice}" == "U" ]]; then
             value=""
         else
-            if [[ "$mode" == "_id_" ]]; then
+            if [[ "${mode}" == "_id_" ]]; then
                 value="${choice}"
             else
                 # get the actual value from the options array
                 local index=$((choice*2+3))
-                if [[ "$mode" == "_file_" ]]; then
+                if [[ "${mode}" == "_file_" ]]; then
                     value="${path}/${options[index]}"
                 else
                     value="${options[index]}"
@@ -869,9 +869,9 @@ function iniFileEditor() {
         fi
 
         if [[ "${choice}" == "U" ]]; then
-            iniUnset "${keys[sel]}" "$value"
+            iniUnset "${keys[sel]}" "${value}"
         else
-            iniSet "${keys[sel]}" "$value"
+            iniSet "${keys[sel]}" "${value}"
         fi
 
     done
@@ -944,8 +944,8 @@ function setRetroArchCoreOption() {
     local value="${2}"
     iniConfig " = " "\"" "${configdir}/all/retroarch-core-options.cfg"
     iniGet "$option"
-    if [[ -z "$ini_value" ]]; then
-        iniSet "$option" "$value"
+    if [[ -z "${ini_value}" ]]; then
+        iniSet "$option" "${value}"
     fi
     chown "${__user}":"${__group}" "${configdir}/all/retroarch-core-options.cfg"
 }
@@ -991,11 +991,11 @@ function loadModuleConfig() {
         key="${option[0]}"
         value="${option[@]:1}"
         iniGet "${key}"
-        if [[ -z "$ini_value" ]]; then
-            iniSet "${key}" "$value"
-            echo "local ${key}=\"$value\""
+        if [[ -z "${ini_value}" ]]; then
+            iniSet "${key}" "${value}"
+            echo "local ${key}=\"${value}\""
         else
-            echo "local ${key}=\"$ini_value\""
+            echo "local ${key}=\"${ini_value}\""
         fi
     done
 }
@@ -1047,7 +1047,7 @@ function runCurl() {
     # capture stderr - while passing both stdout & stderr to terminal
     # curl like wget outputs the progress meter to stderr, so we will extract the error line later
     cmd_err=$(curl "${params[@]}" 2>&1 1>&3 | tee /dev/stderr)
-    ret="$?"
+    ret="${?}"
 
     # remove stdin copy
     exec 3>&-
@@ -1097,7 +1097,7 @@ function download() {
 
     local ret
     runCurl "${params[@]}"
-    ret="$?"
+    ret="${?}"
 
     # if download failed, remove file, log error & return error code
     if [[ "${ret}" -ne 0 ]]; then
@@ -1129,7 +1129,7 @@ function downloadAndVerify() {
     if download "${url}.asc" "${dest}.asc"; then
         if download "$url" "$dest"; then
             cmd_out="$(gpg --verify "${dest}.asc" 2>&1)"
-            ret="$?"
+            ret="${?}"
             if [[ "${ret}" -ne 0 ]]; then
                 md_ret_errors+=("$dest failed signature check:\n\n$cmd_out")
             fi
@@ -1156,8 +1156,8 @@ function downloadAndExtract() {
 
     local temp="$(mktemp -d)"
     # download file, removing temporary folder & returning on error
-    if ! download "$url" "$temp/${file}"; then
-        rm -rf "$temp"
+    if ! download "$url" "${temp}/${file}"; then
+        rm -rf "${temp}"
         return 1
     fi
 
@@ -1166,15 +1166,15 @@ function downloadAndExtract() {
     local ret
     case "${ext}" in
         exe|zip)
-            runCmd unzip "${opts[@]}" -o "$temp/${file}" -d "$dest"
+            runCmd unzip "${opts[@]}" -o "${temp}/${file}" -d "$dest"
             ;;
         *)
-            tar -xvf "$temp/${file}" -C "$dest" "${opts[@]}"
+            tar -xvf "${temp}/${file}" -C "$dest" "${opts[@]}"
             ;;
     esac
-    ret=$?
+    ret=${?}
 
-    rm -rf "$temp"
+    rm -rf "${temp}"
 
     return ${ret}
 }
@@ -1225,14 +1225,14 @@ function getPlatformConfig() {
     local key="${1}"
     local conf
     for conf in "${configdir}/all/platforms.cfg" "$scriptdir/platforms.cfg"; do
-        [[ ! -f "$conf" ]] && continue
-        iniConfig "=" '"' "$conf"
+        [[ ! -f "${conf}" ]] && continue
+        iniConfig "=" '"' "${conf}"
         iniGet "${key}"
-        [[ -n "$ini_value" ]] && break
+        [[ -n "${ini_value}" ]] && break
     done
     # workaround for emptypie platform
     [[ "${key}" == "emptypie_fullname" ]] && ini_value="EmptyPie"
-    echo "$ini_value"
+    echo "${ini_value}"
 }
 
 ## @fn addSystem()
@@ -1271,21 +1271,21 @@ function addSystem() {
 
     local temp
     temp="$(getPlatformConfig "${system}_theme")"
-    if [[ -n "$temp" ]]; then
-        theme="$temp"
+    if [[ -n "${temp}" ]]; then
+        theme="${temp}"
     else
         theme="$system"
     fi
 
     temp="$(getPlatformConfig "${system}_platform")"
-    if [[ -n "$temp" ]]; then
-        platform="$temp"
+    if [[ -n "${temp}" ]]; then
+        platform="${temp}"
     else
         platform="$system"
     fi
 
     temp="$(getPlatformConfig "${system}_fullname")"
-    [[ -n "$temp" ]] && fullname="$temp"
+    [[ -n "${temp}" ]] && fullname="${temp}"
 
     exts="${exts[*]}"
     # add the extensions again as uppercase
@@ -1304,7 +1304,7 @@ function delSystem() {
 
     local temp
     temp="$(getPlatformConfig "${system}_fullname")"
-    [[ -n "$temp" ]] && fullname="$temp"
+    [[ -n "${temp}" ]] && fullname="${temp}"
 
     local function
     for function in $(compgen -A function _del_system_); do
@@ -1319,7 +1319,7 @@ function delSystem() {
 ## @param cmd commandline to launch
 ## @param game rom/game parameter (optional)
 ## @brief Adds a port to the emulationstation ports menu.
-## @details Adds an emulators.cfg entry as with addSystem but also creates a launch script in `$datadir/ports/$name.sh`.
+## @details Adds an emulators.cfg entry as with addSystem but also creates a launch script in `$datadir/ports/${name}.sh`.
 ##
 ## Can also optionally take a game parameter which can be used to create multiple launch
 ## scripts for different games using the same engine - eg for quake
@@ -1442,7 +1442,7 @@ function delEmulator() {
         iniDel "${id}"
         # if it is the default - remove it - runcommand will prompt to select a new default
         iniGet "default"
-        [[ "$ini_value" == "${id}" ]] && iniDel "default"
+        [[ "${ini_value}" == "${id}" ]] && iniDel "default"
         # if we no longer have any entries in the emulators.cfg file we can remove it
         grep -q "=" "$config" || rm -f "$config"
     fi
@@ -1461,7 +1461,7 @@ function dkmsManager() {
     local kernel="$(uname -r)"
     local ver
 
-    case "$mode" in
+    case "${mode}" in
         install)
             if dkms status | grep -q "^$module_name"; then
                 dkmsManager remove "$module_name" "$module_ver"
@@ -1575,7 +1575,7 @@ function signFile() {
     local file="${1}"
     local cmd_out
     cmd_out=$(gpg --default-key "$__gpg_signing_key" --detach-sign --armor --yes "${1}" 2>&1)
-    if [[ "$?" -ne 0 ]]; then
+    if [[ "${?}" -ne 0 ]]; then
         md_ret_errors+=("Failed to sign ${1}\n\n$cmd_out")
         return 1
     fi

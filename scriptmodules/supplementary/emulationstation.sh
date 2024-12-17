@@ -137,6 +137,7 @@ function depends_emulationstation() {
         'rapidjson'
         'SDL2-devel'
         'vlc-devel'
+        'vlc'
     )
     isPlatform "x11" && depends+=('gnome-terminal' 'mesa-demos')
     getDepends "${depends[@]}"
@@ -261,7 +262,7 @@ export TTY="\${TTY:8:1}"
 clear
 tput civis
 "${md_inst}/emulationstation.sh" "\${@}"
-if [[ \$? -eq 139 ]]; then
+if [[ \${?} -eq 139 ]]; then
     dialog --cr-wrap --no-collapse --msgbox "EmulationStation Crashed!\n\nIf this is your first boot of EmptyPie, make sure you are using the correct image for your system.\n\\nCheck your rom file/folder permissions & if running on a Raspberry Pi, make sure your gpu_split is set high enough &/or switch back to using the Carbon theme." 20 60 >/dev/tty
 fi
 tput cnorm
@@ -357,7 +358,7 @@ function gui_emulationstation() {
             options+=(3 "Swap A/B Buttons in ES (Currently: Swapped)")
         fi
 
-        local cmd=(dialog --backtitle "${__backtitle}" --default-item "${default}" --menu "Choose An Option" 22 76 16)
+        local cmd=(dialog --backtitle "${__backtitle}" --default-item "${default}" --menu "Choose an option" 22 76 16)
         local choice
         choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
         [[ -z "${choice}" ]] && break

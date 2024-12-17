@@ -107,12 +107,12 @@ function inputconfiguration() {
             funcname="map_${module_id}_${DEVICE_TYPE}"
 
             if fn_exists "$funcname"; then
-                local params=(${mapping[$input_name]})
+                local params=(${mapping[${input_name}]})
                 local input_type=${params[0]}
                 local input_id=${params[1]}
                 local input_value=${params[2]}
 
-                "$funcname" "$input_name" "$input_type" "$input_id" "$input_value"
+                "$funcname" "${input_name}" "${input_type}" "$input_id" "$input_value"
             fi
         done
 
@@ -126,7 +126,7 @@ function inputconfiguration() {
 
 function fn_exists() {
     declare -f "${1}" > /dev/null
-    return $?
+    return ${?}
 }
 
 function sdl1_map() {

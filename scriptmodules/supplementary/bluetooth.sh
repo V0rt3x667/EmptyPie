@@ -207,7 +207,7 @@ function remove_device_bluetooth() {
 
         local out
         out=$(bt-device --remove "${choice}" 2>&1)
-        if [[ "$?" -eq 0 ]] ; then
+        if [[ "${?}" -eq 0 ]] ; then
             printMsgs "dialog" "Device Removed"
         else
             printMsgs "dialog" "Error Removing Device:\n\n${out}"
@@ -241,7 +241,7 @@ function pair_bluetooth() {
     if [[ "${name}" =~ "PLAYSTATION(R)3 Controller" ]]; then
         bt-device --disconnect="${mac}" >/dev/null
         bt-device --set "${mac}" Trusted 1 >/dev/null
-        if [[ "$?" -eq 0 ]]; then
+        if [[ "${?}" -eq 0 ]]; then
             printMsgs "dialog" "Successfully Authenticated ${name} (${mac}).\n\nYou Can Now Remove The USB Cable."
         else
             printMsgs "dialog" "Unable To Authenticate ${name} (${mac}).\n\nPlease Try To Pair The Device Again, Making Sure To Follow The On-Screen Steps Exactly."
@@ -323,7 +323,7 @@ function pair_bluetooth() {
 
     if [[ -z "${error}" ]]; then
         error=$(bt-device --set "${mac}" Trusted 1 2>&1)
-        if [[ "$?" -eq 0 ]] ; then
+        if [[ "${?}" -eq 0 ]] ; then
             return 0
         fi
     fi

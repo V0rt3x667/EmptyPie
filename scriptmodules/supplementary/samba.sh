@@ -69,7 +69,7 @@ function remove_shares_samba() {
 
 function gui_samba() {
     while true; do
-        local cmd=(dialog --backtitle "${__backtitle}" --menu "Choose An Option" 22 76 16)
+        local cmd=(dialog --backtitle "${__backtitle}" --menu "Choose an option" 22 76 16)
         local options=(
             1 "Install EmptyPie Samba Shares"
             2 "Remove EmptyPie Samba Shares"

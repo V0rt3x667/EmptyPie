@@ -153,7 +153,7 @@ function package_setup() {
         if [[ "$has_net" -eq 1 ]]; then
             dialog --backtitle "$__backtitle" --infobox "Checking for updates for ${id} ..." 3 60 >/dev/tty
             rp_hasBinary "${id}"
-            local ret="$?"
+            local ret="${?}"
             [[ "${ret}" -eq 0 ]] && has_binary=1
             [[ "${ret}" -eq 2 ]] && has_net=0
         fi
@@ -178,7 +178,7 @@ function package_setup() {
 
             if [[ "$has_net" -eq 1 ]]; then
                 rp_hasNewerModule "${id}" "$pkg_origin"
-                local has_newer="$?"
+                local has_newer="${?}"
                 case "$has_newer" in
                     0)
                         status+="\nUpdate is available."
@@ -242,7 +242,7 @@ function package_setup() {
             options+=(V "Package Version Information")
         fi
 
-        cmd=(dialog --backtitle "$__backtitle" --cancel-label "Back" --default-item "$default" --menu "Choose an option for ${id}\n$status" 22 76 16)
+        cmd=(dialog --backtitle "$__backtitle" --cancel-label "Back" --default-item "${default}" --menu "Choose an option for ${id}\n${status}" 22 76 16)
         choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
         default="${choice}"
         local logfilename
@@ -260,7 +260,7 @@ function package_setup() {
                 rps_logInit
                 {
                     rps_logStart
-                    rp_installModule "${id}" "$mode"
+                    rp_installModule "${id}" "${mode}"
                     rps_logEnd
                 } &> >(_setup_gzip_log "$logfilename")
                 rps_printInfo "$logfilename"
@@ -313,7 +313,7 @@ Branch: ${__mod_info[${id}/pkg_repo_branch]}
 Commit: ${__mod_info[${id}/pkg_repo_commit]}
 Date: ${__mod_info[${id}/pkg_repo_date]}
 _EOF_
-               printMsgs "dialog" "$info"
+               printMsgs "dialog" "${info}"
                ;;
             Z)
                 rp_callModule "${id}" clean
@@ -370,7 +370,7 @@ function section_gui_setup() {
             # Create a heading for each origin & module type
             if [[ "$last_type" != "${type}" ]]; then
                 info="${type}"
-                pkgs+=("----" "\Z4$info ----" "Packages from $info")
+                pkgs+=("----" "\Z4${info} ----" "Packages from ${info}")
                 last_type="${type}"
             fi
             if ! rp_isEnabled "${id}"; then
@@ -386,25 +386,25 @@ function section_gui_setup() {
                     info="${id}"
                 fi
             fi
-            pkgs+=("${__mod_idx[${id}]}" "$info" "${id} - ${__mod_info[${id}/desc]}"$'\n\n'"${__mod_info[${id}/help]}")
+            pkgs+=("${__mod_idx[${id}]}" "${info}" "${id} - ${__mod_info[${id}/desc]}"$'\n\n'"${__mod_info[${id}/help]}")
         done
 
         if [[ "$has_net" -eq 1 && "$num_pkgs" -gt 0 ]]; then
-            options+=(U "Update All Installed $name" "This will update any installed $name. The packages will be updated by the method used previously.")
+            options+=(U "Update All Installed ${name}" "This will update any installed ${name}. The packages will be updated by the method used previously.")
         fi
 
         # Allow installing an entire section except for drivers & dependencies.
         if [[ "$has_net" -eq 1 && "$section" != "driver" && "$section" != "depends" ]]; then
             # Don't show "Install all packages" when we are showing only installed packages.
             if [[ "$section" != "inst" ]]; then
-                options+=(I "Install All $name" "This will install all $name. If a package is not installed & a pre-compiled binary is available it will be used. If a package is already installed, it will be updated by the method used previously.")
+                options+=(I "Install All ${name}" "This will install all ${name}. If a package is not installed & a pre-compiled binary is available it will be used. If a package is already installed, it will be updated by the method used previously.")
             fi
-            options+=(X "Remove All Installed $name" "X This will remove all installed $name.")
+            options+=(X "Remove All Installed ${name}" "X This will remove all installed ${name}.")
         fi
 
         options+=("${pkgs[@]}")
 
-        local cmd=(dialog --colors --backtitle "$__backtitle" --cancel-label "Back" --item-help --help-button --default-item "$default" --menu "$status" 22 76 16)
+        local cmd=(dialog --colors --backtitle "$__backtitle" --cancel-label "Back" --item-help --help-button --default-item "${default}" --menu "${status}" 22 76 16)
 
         local choice
         choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
@@ -427,14 +427,14 @@ function section_gui_setup() {
             U|I)
                 local mode="update"
                 [[ "${choice}" == "I" ]] && mode="install"
-                dialog --defaultno --yesno "Are you sure you want to $mode all installed $name?" 22 76 2>&1 >/dev/tty || continue
+                dialog --defaultno --yesno "Are you sure you want to ${mode} all installed ${name}?" 22 76 2>&1 >/dev/tty || continue
                 rps_logInit
                 {
                     rps_logStart
                     for id in "${ids[@]}"; do
                         ! rp_isEnabled "${id}" && continue
                         # if we are updating, skip packages that are not installed
-                        if [[ "$mode" == "update" ]]; then
+                        if [[ "${mode}" == "update" ]]; then
                             if rp_isInstalled "${id}"; then
                                 rp_installModule "${id}" "_update_"
                             fi
@@ -447,7 +447,7 @@ function section_gui_setup() {
                 rps_printInfo "$logfilename"
                 ;;
             X)
-                local text="Are you sure you want to remove all installed $name?"
+                local text="Are you sure you want to remove all installed ${name}?"
                 [[ "$section" == "core" ]] && text+="\n\nWARNING! - Core packages are needed for EmptyPie to function!"
                 dialog --defaultno --yesno "$text" 22 76 2>&1 >/dev/tty || continue
                 rps_logInit
@@ -481,7 +481,7 @@ function config_gui_setup() {
             fi
         done
 
-        local cmd=(dialog --backtitle "$__backtitle" --cancel-label "Back" --item-help --help-button --default-item "$default" --menu "Choose an option" 22 76 16)
+        local cmd=(dialog --backtitle "$__backtitle" --cancel-label "Back" --item-help --help-button --default-item "${default}" --menu "Choose an option" 22 76 16)
 
         local choice
         choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
@@ -590,7 +590,7 @@ function packages_gui_setup() {
 
     local cmd
     while true; do
-        cmd=(dialog --backtitle "$__backtitle" --cancel-label "Back" --item-help --help-button --default-item "$default" --menu "Choose An Option" 22 76 16)
+        cmd=(dialog --backtitle "$__backtitle" --cancel-label "Back" --item-help --help-button --default-item "${default}" --menu "Choose an option" 22 76 16)
 
         local choice
         choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
@@ -642,7 +642,7 @@ function gui_setup() {
         local commit
         commit=$(sudo -u "${__user}" git -C "$scriptdir" log -1 --pretty=format:"%cr (%h)")
 
-        cmd=(dialog --backtitle "$__backtitle" --title "EmptyPie-Setup Script" --cancel-label "Exit" --item-help --help-button --default-item "$default" --menu "Version: $__version - Last Commit: $commit\nSystem: $__platform ($__platform_arch) - Running On: $__os_desc" 22 76 16)
+        cmd=(dialog --backtitle "$__backtitle" --title "EmptyPie-Setup Script" --cancel-label "Exit" --item-help --help-button --default-item "${default}" --menu "Version: $__version - Last Commit: $commit\nSystem: $__platform ($__platform_arch) - Running On: $__os_desc" 22 76 16)
         options=(
             I "Basic Install" "I This will install all packages from Core & Main which gives a basic EmptyPie install. Further packages can then be installed later from the Optional & Experimental sections. If binaries are available they will be used, alternatively packages will be built from source - which will take longer."
 

@@ -377,7 +377,7 @@ function basic_menu_configedit() {
 
 function advanced_menu_configedit() {
     while true; do
-        local cmd=(dialog --backtitle "${__backtitle}" --cancel-label "Back" --menu "Choose An Option" 22 76 16)
+        local cmd=(dialog --backtitle "${__backtitle}" --cancel-label "Back" --menu "Choose an option" 22 76 16)
         local options=(
             1 "Configure Libretro Options"
             2 "Manually Edit RetroArch Configurations"
@@ -422,7 +422,7 @@ function advanced_menu_configedit() {
 
 function gui_configedit() {
     while true; do
-        local cmd=(dialog --backtitle "${__backtitle}" --cancel-label "Exit" --menu "Choose An Option" 22 76 16)
+        local cmd=(dialog --backtitle "${__backtitle}" --cancel-label "Exit" --menu "Choose an option" 22 76 16)
         local options=(
             1 "Configure Basic Libretro Emulator Options"
             2 "Advanced Configuration"

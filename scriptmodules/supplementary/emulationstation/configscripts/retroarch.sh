@@ -7,7 +7,7 @@
 function onstart_retroarch_joystick() {
     iniConfig " = " '"' "${configdir}/all/retroarch.cfg"
     iniGet "input_joypad_driver"
-    local input_joypad_driver="$ini_value"
+    local input_joypad_driver="${ini_value}"
     if [[ -z "$input_joypad_driver" ]]; then
         input_joypad_driver="udev"
     fi
@@ -150,7 +150,7 @@ function map_retroarch_joystick() {
     local input_value="${4}"
 
     local keys
-    case "$input_name" in
+    case "${input_name}" in
         up)
             keys=("input_up")
             ;;
@@ -226,7 +226,7 @@ function map_retroarch_joystick() {
         hotkeyenable)
             keys=("input_enable_hotkey")
             _retroarch_select_hotkey=0
-            if [[ "$input_type" == "key" && "$input_id" == "0" ]]; then
+            if [[ "${input_type}" == "key" && "$input_id" == "0" ]]; then
                 return
             fi
             ;;
@@ -240,10 +240,10 @@ function map_retroarch_joystick() {
     local type
     declare -A hat_map=([1]="up" [2]="right" [4]="down" [8]="left")
     iniGet "input_driver"
-    local input_driver="$ini_value"
+    local input_driver="${ini_value}"
     local autoconfig_preset=$(grep -rwFl "$rootdir/emulators/retroarch/autoconfig-presets/$input_driver" -e "$DEVICE_NAME" | head -1)
     for key in "${keys[@]}"; do
-        case "$input_type" in
+        case "${input_type}" in
             hat)
                 # check if hat input value is correct
                 [[ -z ${hat_map[$input_value]} ]] && return
@@ -274,19 +274,19 @@ function map_retroarch_joystick() {
                 fi
                 ;;
         esac
-        if [[ "$input_name" == "select" && "${_retroarch_select_hotkey}" -eq 1 ]]; then
+        if [[ "${input_name}" == "select" && "${_retroarch_select_hotkey}" -eq 1 ]]; then
             _retroarch_select_type="${type}"
         fi
         key+="_${type}"
-        iniSet "${key}" "$value"
+        iniSet "${key}" "${value}"
 
         # set button labels from autoconfig preset (if available), when binding matches the preset
         if [[ -f "$autoconfig_preset" ]]; then
             iniGet "${key}" "$autoconfig_preset"
-            if [[ "$ini_value" == "$value" ]]; then
+            if [[ "${ini_value}" == "${value}" ]]; then
                 key+="_label"
                 iniGet "${key}" "$autoconfig_preset"
-                [[ -n "$ini_value" ]] && iniSet "${key}" "$ini_value"
+                [[ -n "${ini_value}" ]] && iniSet "${key}" "${ini_value}"
             fi
         fi
     done
@@ -299,7 +299,7 @@ function map_retroarch_keyboard() {
     local input_value="${4}"
 
     local key
-    case "$input_name" in
+    case "${input_name}" in
         up)
             keys=("input_player1_up")
             ;;
@@ -367,7 +367,7 @@ function onend_retroarch_joystick() {
     # in the configuration, so we should use the select button as hotkey enable if set
     if [[ "${_retroarch_select_hotkey}" -eq 1 ]]; then
         iniGet "input_select_${_retroarch_select_type}"
-        [[ -n "$ini_value" ]] && iniSet "input_enable_hotkey_${_retroarch_select_type}" "$ini_value"
+        [[ -n "${ini_value}" ]] && iniSet "input_enable_hotkey_${_retroarch_select_type}" "${ini_value}"
     fi
 
     # hotkey sanity check
@@ -398,13 +398,13 @@ function onend_retroarch_joystick() {
 function onend_retroarch_keyboard() {
     if [[ "${_retroarch_select_hotkey}" -eq 1 ]]; then
         iniGet "input_player1_select"
-        iniSet "input_enable_hotkey" "$ini_value"
+        iniSet "input_enable_hotkey" "${ini_value}"
     fi
 
     # hotkey sanity check
     # remove hotkeys if there is no hotkey enable button
     iniGet "input_enable_hotkey"
-    if [[ -z "$ini_value" || "$ini_value" == "nul" ]]; then
+    if [[ -z "${ini_value}" || "${ini_value}" == "nul" ]]; then
         iniSet "input_state_slot_decrease" ""
         iniSet "input_state_slot_increase" ""
         iniSet "input_reset" ""

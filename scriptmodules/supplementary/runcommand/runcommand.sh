@@ -74,7 +74,7 @@
 ## & other options (depending what is being launched).
 
 ROOTDIR="/opt/emptypie"
-CONFIGDIR="$ROOTDIR/configs"
+CONFIGDIR="${ROOTDIR}/configs"
 LOG="/dev/shm/runcommand.log"
 
 RUNCOMMAND_CONF="${CONFIGDIR}/all/runcommand.cfg"
@@ -82,15 +82,15 @@ VIDEO_CONF="${CONFIGDIR}/all/videomodes.cfg"
 EMU_CONF="${CONFIGDIR}/all/emulators.cfg"
 BACKENDS_CONF="${CONFIGDIR}/all/backends.cfg"
 RETRONETPLAY_CONF="${CONFIGDIR}/all/retronetplay.cfg"
-JOY2KEY="$ROOTDIR/admin/joy2key/joy2key"
+JOY2KEY="${ROOTDIR}/admin/joy2key/joy2key"
 BIOSDIR="${${HOME}}/EmptyPie/BIOS"
 
 # modesetting tools
 TVSERVICE="/opt/vc/bin/tvservice"
-KMSTOOL="$ROOTDIR/supplementary/kmsxx/kmsprint-rp"
+KMSTOOL="${ROOTDIR}/supplementary/kmsxx/kmsprint-rp"
 XRANDR="xrandr"
 
-source "$ROOTDIR/lib/inifuncs.sh"
+source "${ROOTDIR}/lib/inifuncs.sh"
 
 # disable the `patsub_replacement` shell option, it breaks the string substitution when replacement contains '&'
 if shopt -s patsub_replacement 2>/dev/null; then
@@ -108,19 +108,19 @@ function get_config() {
     MODE_MAP[4-DMT-4:3]="DMT-16"
     MODE_MAP[4-CEA-16:9]="CEA-4"
 
-    if [[ -f "$RUNCOMMAND_CONF" ]]; then
-        iniConfig " = " '"' "$RUNCOMMAND_CONF"
+    if [[ -f "${RUNCOMMAND_CONF}" ]]; then
+        iniConfig " = " '"' "${RUNCOMMAND_CONF}"
         iniGet "governor"
-        GOVERNOR="$ini_value"
+        GOVERNOR="${ini_value}"
         iniGet "use_art"
-        USE_ART="$ini_value"
+        USE_ART="${ini_value}"
         iniGet "disable_joystick"
-        DISABLE_JOYSTICK="$ini_value"
+        DISABLE_JOYSTICK="${ini_value}"
         iniGet "disable_menu"
-        DISABLE_MENU="$ini_value"
+        DISABLE_MENU="${ini_value}"
         iniGet "image_delay"
-        IMAGE_DELAY="$ini_value"
-        [[ -z "$IMAGE_DELAY" ]] && IMAGE_DELAY=2
+        IMAGE_DELAY="${ini_value}"
+        [[ -z "${IMAGE_DELAY}" ]] && IMAGE_DELAY=2
     fi
 
     if [[ -n "${DISPLAY}" ]] && ${XRANDR} &>/dev/null; then
@@ -135,21 +135,21 @@ function get_config() {
 
 function start_joy2key() {
     # check if joystick support is enabled & joy2key is available
-    [[ "$DISABLE_JOYSTICK" -eq 1 || ! -f "$JOY2KEY" ]] && return
+    [[ "${DISABLE_JOYSTICK}" -eq 1 || ! -f "${JOY2KEY}" ]] && return
 
-    "$JOY2KEY" start 2>/dev/null && return 0
+    "${JOY2KEY}" start 2>/dev/null && return 0
 }
 
 function stop_joy2key() {
     # if joy2key is installed, stop it
-    [[ -f "$JOY2KEY" ]] && "$JOY2KEY" stop
+    [[ -f "${JOY2KEY}" ]] && "${JOY2KEY}" stop
 }
 
 function get_params() {
     MODE_REQ="${1}"
     COMMAND="${2}"
 
-    [[ -z "$MODE_REQ" || -z "${COMMAND}" ]] && return 1
+    [[ -z "${MODE_REQ}" || -z "${COMMAND}" ]] && return 1
 
     CONSOLE_OUT=0
     # if the COMMAND is _SYS_, or _PORT_ arg 3 should be system name, & arg 4 rom/game, & we look up the configured system for that combination
@@ -199,7 +199,7 @@ function clean_name() {
     local name="${1}"
     name="${name//\//_}"
     name="${name//[^a-zA-Z0-9_\-]/}"
-    echo "$name"
+    echo "${name}"
 }
 
 function set_save_vars() {
@@ -207,9 +207,9 @@ function set_save_vars() {
     SAVE_EMU="$(clean_name "${EMULATOR}")"
     SAVE_ROM_OLD=r$(echo "${COMMAND}" | md5sum | cut -d" " -f1)
     if [[ "${IS_SYS}" -eq 1 ]]; then
-        SAVE_ROM="${SAVE_EMU}_$(clean_name "$ROM_BN")"
+        SAVE_ROM="${SAVE_EMU}_$(clean_name "${ROM_BN}")"
     else
-        SAVE_ROM="$SAVE_EMU"
+        SAVE_ROM="${SAVE_EMU}"
     fi
 }
 
@@ -222,39 +222,39 @@ function get_all_tvs_modes() {
             local info="$(echo "${line}" | cut -d":" -f2-)"
             info=${info/ /}
             if [[ -n "${id}" ]]; then
-                MODE_ID+=($group-${id})
-                MODE[$group-${id}]="$info"
+                MODE_ID+=(${group}-${id})
+                MODE[${group}-${id}]="${info}"
             fi
-        done < <($TVSERVICE -m $group)
+        done < <($TVSERVICE -m ${group})
     done
     local aspect
     for group in "NTSC" "PAL"; do
         for aspect in "4:3" "16:10" "16:9"; do
-            MODE_ID+=($group-$aspect)
-            MODE[$group-$aspect]="SDTV - $group-$aspect"
+            MODE_ID+=(${group}-${aspect})
+            MODE[${group}-${aspect}]="SDTV - ${group}-${aspect}"
         done
     done
 }
 
 function get_all_kms_modes() {
     declare -Ag MODE
-    default_mode="$(echo "$KMS_BUFFER" | grep -Em1 "^Mode: [0-9]+ crtc")"
-    crtc="$(echo "$default_mode" | cut -d' ' -f  4)"
-    crtc_encoder="$(echo "$KMS_BUFFER" | grep "Encoder map:" | awk -v crtc="$crtc" '${5} == crtc { print ${3} }')"
+    default_mode="$(echo "${KMS_BUFFER}" | grep -Em1 "^Mode: [0-9]+ crtc")"
+    crtc="$(echo "${default_mode}" | cut -d' ' -f  4)"
+    crtc_encoder="$(echo "${KMS_BUFFER}" | grep "Encoder map:" | awk -v crtc="${crtc}" '${5} == crtc { print ${3} }')"
 
     # add default mode as fallback in case real mode cannot be mapped
-    MODE[def-def]="$(echo "$default_mode" | cut -d' ' -f5-)"
+    MODE[def-def]="$(echo "${default_mode}" | cut -d' ' -f5-)"
 
     # parse only the video modes connected to the current active crtc
     while read -r mode_str mode_id con encoder_id info; do
            # we only need 2nd column (mode index) & the 5+ columns (resolution info)
            # populate resolution info into arrays (using mapped crtc encoder value)
-           MODE_ID+=($crtc-$mode_id)
-           MODE[$crtc-$mode_id]="$info"
+           MODE_ID+=(${crtc}-${mode_id})
+           MODE[${crtc}-${mode_id}]="${info}"
 
            # if string matches default mode, add a special mapped entry
-           [[ "$default_mode" =~ "$info" ]] && MODE[map-map]="$crtc $mode_id"
-    done < <(echo "$KMS_BUFFER" | grep -E "^Mode: [0-9]+ connector $crtc_encoder")
+           [[ "${default_mode}" =~ "${info}" ]] && MODE[map-map]="${crtc} ${mode_id}"
+    done < <(echo "${KMS_BUFFER}" | grep -E "^Mode: [0-9]+ connector ${crtc_encoder}")
 }
 
 function get_all_x11_modes()
@@ -269,7 +269,7 @@ function get_all_x11_modes()
         read -r line
         # array is x/y resolution @ vertical refresh rate ( details )
         MODE[${id}]="${line}"
-    done < <( $XRANDR --verbose | awk '
+    done < <( ${XRANDR} --verbose | awk '
         # defines the type of line
         # true is the "header" (output & id)
         # false is the "description" (Mode: & everything that begins with a space)
@@ -316,27 +316,27 @@ function get_tvs_mode_info() {
     local mode_info=()
 
     # get mode type / id
-    if [[ "$status" =~ (PAL|NTSC) ]]; then
-        temp=($(echo "$status" | grep -oE "(PAL|NTSC) (4:3|16:10|16:9)"))
+    if [[ "${status}" =~ (PAL|NTSC) ]]; then
+        temp=($(echo "${status}" | grep -oE "(PAL|NTSC) (4:3|16:10|16:9)"))
     else
-        temp=($(echo "$status" | grep -oE "(CEA|DMT) \([0-9]+\)"))
+        temp=($(echo "${status}" | grep -oE "(CEA|DMT) \([0-9]+\)"))
     fi
     mode_info[0]="${temp[0]}"
     mode_info[1]="${temp[1]//[()]/}"
 
     # get mode resolution
-    temp=$(echo "$status" | cut -d"," -f2 | grep -oE "[0-9]+x[0-9]+")
+    temp=$(echo "${status}" | cut -d"," -f2 | grep -oE "[0-9]+x[0-9]+")
     temp=(${temp/x/ })
     mode_info[2]="${temp[0]}"
     mode_info[3]="${temp[1]}"
 
     # get aspect ratio
-    temp=$(echo "$status" | grep -oE "([0-9]+:[0-9]+)")
-    mode_info[4]="$temp"
+    temp=$(echo "${status}" | grep -oE "([0-9]+:[0-9]+)")
+    mode_info[4]="${temp}"
 
     # get refresh rate
-    temp=$(echo "$status" | grep -oE "[0-9\.]+Hz" | cut -d"." -f1)
-    mode_info[5]="$temp"
+    temp=$(echo "${status}" | grep -oE "[0-9\.]+Hz" | cut -d"." -f1)
+    mode_info[5]="${temp}"
 
     echo "${mode_info[@]}"
 }
@@ -384,11 +384,11 @@ function get_x11_mode_info() {
     local mode_info=()
     local status
 
-    if [[ -z "$mode_id" ]]; then
+    if [[ -z "${mode_id}" ]]; then
         # determine current output
-        mode_id[0]="$($XRANDR --verbose | awk '/ connected.*\(0x[a-f0-9]{1,}\)/ { print ${1};exit }')"
+        mode_id[0]="$(${XRANDR} --verbose | awk '/ connected.*\(0x[a-f0-9]{1,}\)/ { print ${1};exit }')"
         # determine current mode id & strip brackets
-        mode_id[1]="$($XRANDR --verbose | awk '/ connected.*\(0x[a-f0-9]{1,}\)/ {print;exit}' | grep -o "(0x[a-f0-9]\{1,\})")"
+        mode_id[1]="$(${XRANDR} --verbose | awk '/ connected.*\(0x[a-f0-9]{1,}\)/ {print;exit}' | grep -o "(0x[a-f0-9]\{1,\})")"
         mode_id[1]="$(echo ${mode_id[1]:1:-1})"
     fi
 
@@ -421,13 +421,13 @@ function default_process() {
     local value="${4}"
 
     iniConfig " = " '"' "${config}"
-    case "$mode" in
+    case "${mode}" in
         get)
             iniGet "${key}"
-            echo "$ini_value"
+            echo "${ini_value}"
             ;;
         set)
-            iniSet "${key}" "$value"
+            iniSet "${key}" "${value}"
             ;;
         del)
             iniDel "${key}"
@@ -443,13 +443,13 @@ function default_mode() {
     local key
     case "${type}" in
         vid_emu)
-            key="$SAVE_EMU"
+            key="${SAVE_EMU}"
             ;;
         vid_rom_old)
-            key="$SAVE_ROM_OLD"
+            key="${SAVE_ROM_OLD}"
             ;;
         vid_rom)
-            key="$SAVE_ROM"
+            key="${SAVE_ROM}"
             ;;
         fb_emu)
             key="${SAVE_EMU}_fb"
@@ -464,7 +464,7 @@ function default_mode() {
             key="${SAVE_EMU}_render"
             ;;
     esac
-    default_process "$VIDEO_CONF" "$mode" "${key}" "$value"
+    default_process "${VIDEO_CONF}" "${mode}" "${key}" "${value}"
 }
 
 function default_emulator() {
@@ -473,7 +473,7 @@ function default_emulator() {
     local value="${3}"
 
     local key
-    local config="$EMU_SYS_CONF"
+    local config="${EMU_SYS_CONF}"
 
     case "${type}" in
         emu_sys)
@@ -483,53 +483,53 @@ function default_emulator() {
             key="${EMULATOR}"
             ;;
         emu_rom_old)
-            key="$SYS_SAVE_ROM_OLD"
-            config="$EMU_CONF"
+            key="${SYS_SAVE_ROM_OLD}"
+            config="${EMU_CONF}"
             ;;
         emu_rom)
-            key="$SYS_SAVE_ROM"
-            config="$EMU_CONF"
+            key="${SYS_SAVE_ROM}"
+            config="${EMU_CONF}"
             ;;
     esac
-    default_process "${config}" "$mode" "${key}" "$value"
+    default_process "${config}" "${mode}" "${key}" "${value}"
 }
 
 function load_mode_defaults() {
     local separator="-"
-    [[ "$HAS_MODESET" == "x11" ]] && separator=":"
+    [[ "${HAS_MODESET}" == "x11" ]] && separator=":"
     local temp
     MODE_ORIG=()
 
-    if [[ -n "$HAS_MODESET" ]]; then
+    if [[ -n "${HAS_MODESET}" ]]; then
         # populate available modes
-        [[ -z "$MODE_ID" ]] && get_all_${HAS_MODESET}_modes
+        [[ -z "${MODE_ID}" ]] && get_all_${HAS_MODESET}_modes
 
         # get current mode / aspect ratio
         MODE_ORIG=($(get_${HAS_MODESET}_mode_info))
         MODE_CUR=("${MODE_ORIG[@]}")
         MODE_ORIG_ID="${MODE_ORIG[0]}${separator}${MODE_ORIG[1]}"
 
-        if [[ "$MODE_REQ" == "0" ]]; then
-            MODE_REQ_ID="$MODE_ORIG_ID"
-        elif [[ "$HAS_MODESET" == "tvs" ]]; then
+        if [[ "${MODE_REQ}" == "0" ]]; then
+            MODE_REQ_ID="${MODE_ORIG_ID}"
+        elif [[ "${HAS_MODESET}" == "tvs" ]]; then
             # get default mode for requested mode of 1 or 4
-            if [[ "$MODE_REQ" =~ (1|4) ]]; then
+            if [[ "${MODE_REQ}" =~ (1|4) ]]; then
                 # if current aspect is anything else like 5:4 / 10:9 just choose a 4:3 mode
                 local aspect="${MODE_ORIG[4]}"
-                [[ "$aspect" =~ (4:3|16:9) ]] || aspect="4:3"
-                temp="${MODE_REQ}-${MODE_ORIG[0]}-$aspect"
-                MODE_REQ_ID="${MODE_MAP[$temp]}"
+                [[ "${aspect}" =~ (4:3|16:9) ]] || aspect="4:3"
+                temp="${MODE_REQ}-${MODE_ORIG[0]}-${aspect}"
+                MODE_REQ_ID="${MODE_MAP[${temp}]}"
             else
-                MODE_REQ_ID="$MODE_REQ"
+                MODE_REQ_ID="${MODE_REQ}"
             fi
         else
-            MODE_REQ_ID="$MODE_REQ"
+            MODE_REQ_ID="${MODE_REQ}"
         fi
     fi
 
     # get default fb_res (if not running on X)
     # FB_ORIG=()
-    # if [[ -z "$DISPLAY" ]]; then
+    # if [[ -z "${DISPLAY}" ]]; then
     #     local status=($(fbset | tr -s '\n'))
     #     FB_ORIG[0]="${status[3]}"
     #     FB_ORIG[1]="${status[4]}"
@@ -540,44 +540,44 @@ function load_mode_defaults() {
     RENDER_RES="config"
 
     local mode
-    if [[ -f "$VIDEO_CONF" ]]; then
+    if [[ -f "${VIDEO_CONF}" ]]; then
         # load default video mode for emulator / rom
         mode="$(default_mode get vid_emu)"
-        [[ -n "$mode" ]] && MODE_REQ_ID="$mode"
+        [[ -n "${mode}" ]] && MODE_REQ_ID="${mode}"
 
         # get default mode for system + rom combination
         # try the old key first & convert to the new key if found
         mode="$(default_mode get vid_rom_old)"
-        if [[ -n "$mode" ]]; then
+        if [[ -n "${mode}" ]]; then
             default_mode del vid_rom_old
-            default_mode set vid_rom "$mode"
-            MODE_REQ_ID="$mode"
+            default_mode set vid_rom "${mode}"
+            MODE_REQ_ID="${mode}"
         else
             mode="$(default_mode get vid_rom)"
-            [[ -n "$mode" ]] && MODE_REQ_ID="$mode"
+            [[ -n "${mode}" ]] && MODE_REQ_ID="${mode}"
         fi
 
-        if [[ "$HAS_MODESET" == "tvs" ]]; then
+        if [[ "${HAS_MODESET}" == "tvs" ]]; then
             # load default framebuffer res for emulator / rom
             mode="$(default_mode get fb_emu)"
-            [[ -n "$mode" ]] && FB_NEW="$mode"
+            [[ -n "${mode}" ]] && FB_NEW="${mode}"
 
             # get default fb mode for system + rom combination
             # try the old key first & convert to the new key if found
             mode="$(default_mode get fb_rom_old)"
-            if [[ -n "$mode" ]]; then
+            if [[ -n "${mode}" ]]; then
                 default_mode del fb_rom_old
-                default_mode set fb_rom "$mode"
-                FB_NEW="$mode"
+                default_mode set fb_rom "${mode}"
+                FB_NEW="${mode}"
             else
                 mode="$(default_mode get fb_rom)"
-                [[ -n "$mode" ]] && FB_NEW="$mode"
+                [[ -n "${mode}" ]] && FB_NEW="${mode}"
             fi
         fi
 
         # get default retroarch render resolution for emulator
         mode="$(default_mode get render)"
-        [[ -n "$mode" ]] && RENDER_RES="$mode"
+        [[ -n "${mode}" ]] && RENDER_RES="${mode}"
     fi
 }
 
@@ -590,7 +590,7 @@ function main_menu() {
     local user_menu=0
     [[ -d "${CONFIGDIR}/all/runcommand-menu" && -n "$(find "${CONFIGDIR}/all/runcommand-menu" -maxdepth 1 -name "*.sh")" ]] && user_menu=1
 
-    [[ -z "$ROM_BN" ]] && ROM_BN="game/rom"
+    [[ -z "${ROM_BN}" ]] && ROM_BN="game/rom"
     [[ -z "${SYSTEM}" ]] && SYSTEM="emulator/port"
 
     while true; do
@@ -600,26 +600,26 @@ function main_menu() {
             local emu_sys="$(default_emulator get emu_sys)"
             local emu_rom="$(default_emulator get emu_rom)"
             options+=(
-                ES "Select default emulator for ${SYSTEM} ($emu_sys)"
-                ER "Select emulator for ROM ($emu_rom)"
+                ES "Select default emulator for ${SYSTEM} (${emu_sys})"
+                ER "Select emulator for ROM (${emu_rom})"
             )
         fi
 
-        if [[ -n "$HAS_MODESET" ]]; then
+        if [[ -n "${HAS_MODESET}" ]]; then
             local vid_emu="$(default_mode get vid_emu)"
             local vid_rom="$(default_mode get vid_rom)"
             options+=(
-                VE "Select video mode for ${EMULATOR} ($vid_emu)"
-                VR "Select video mode for ${EMULATOR} + ROM ($vid_rom)"
+                VE "Select video mode for ${EMULATOR} (${vid_emu})"
+                VR "Select video mode for ${EMULATOR} + ROM (${vid_rom})"
             )
         fi
 
         if [[ "${EMULATOR}" == lr-* ]]; then
-            if [[ "$HAS_MODESET" == "tvs" ]]; then
-                options+=(R "Select RetroArch render res for ${EMULATOR} ($RENDER_RES)")
+            if [[ "${HAS_MODESET}" == "tvs" ]]; then
+                options+=(R "Select RetroArch render res for ${EMULATOR} (${RENDER_RES})")
             fi
             options+=(C "Edit custom RetroArch config for this ROM")
-        elif [[ "$HAS_MODESET" == "tvs" ]]; then
+        elif [[ "${HAS_MODESET}" == "tvs" ]]; then
             local fb_emu="$(default_mode get fb_emu)"
             local fb_rom="$(default_mode get fb_rom)"
             options+=(
@@ -635,38 +635,38 @@ function main_menu() {
             options+=(Z "Launch with netplay enabled")
         fi
 
-        if [[ "$user_menu" -eq 1 ]]; then
+        if [[ "${user_menu}" -eq 1 ]]; then
             options+=(U "User Menu")
         fi
 
-        options+=(Q "Exit (without launching)")
+        options+=(Q "Exit (Without launching)")
 
         local temp_mode
-        if [[ -n "$HAS_MODESET" ]]; then
+        if [[ -n "${HAS_MODESET}" ]]; then
             temp_mode="${MODE[$MODE_REQ_ID]}"
         else
             temp_mode="n/a"
         fi
 
-        cmd=(dialog --nocancel --default-item "$default" --menu "System: ${SYSTEM}\nEmulator: ${EMULATOR}\nVideo Mode: $temp_mode\nROM: $ROM_BN"  22 76 16 )
+        cmd=(dialog --nocancel --default-item "${default}" --menu "System: ${SYSTEM}\nEmulator: ${EMULATOR}\nVideo Mode: ${temp_mode}\nROM: ${ROM_BN}"  22 76 16 )
         choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
         default="${choice}"
 
         case "${choice}" in
             ES)
-                choose_emulator "emu_sys" "$emu_sys"
+                choose_emulator "emu_sys" "${emu_sys}"
                 ;;
             ER)
-                choose_emulator "emu_rom" "$emu_rom"
+                choose_emulator "emu_rom" "${emu_rom}"
                 ;;
             VE)
-                choose_mode "vid_emu" "$vid_emu"
+                choose_mode "vid_emu" "${vid_emu}"
                 ;;
             VR)
-                choose_mode "vid_rom" "$vid_rom"
+                choose_mode "vid_rom" "${vid_rom}"
                 ;;
             R)
-                choose_render_res "render" "$RENDER_RES"
+                choose_render_res "render" "${RENDER_RES}"
                 ;;
             C)
                 touch "${ROM}.cfg"
@@ -695,7 +695,7 @@ function main_menu() {
                 ;;
             U)
                 user_menu
-                local ret="$?"
+                local ret="${?}"
                 [[ "${ret}" -eq 1 ]] && return 1
                 [[ "${ret}" -eq 2 ]] && return 0
                 ;;
@@ -716,39 +716,39 @@ function choose_mode() {
     local mode_desc=""
 
     options=("X" "Clear / Remove")
-    if [[ "$mode" == vid_* ]]; then
+    if [[ "${mode}" == vid_* ]]; then
         mode_desc="video mode for "
         for key in "${MODE_ID[@]}"; do
             options+=("${key}" "${MODE[${key}]}")
         done
-    elif [[ "$mode" == fb_* ]]; then
+    elif [[ "${mode}" == fb_* ]]; then
         mode_desc="framebuffer resolution for "
         for key in $(get_resolutions); do
             options+=("${key}" "${key}")
         done
     fi
 
-    if [[ "$mode" == *_emu ]]; then
+    if [[ "${mode}" == *_emu ]]; then
         mode_desc+="${EMULATOR}"
     else
-        mode_desc+="${EMULATOR} + ROM ($ROM_BN)"
+        mode_desc+="${EMULATOR} + ROM (${ROM_BN})"
     fi
 
-    local menu_title="Choose $mode_desc\nCurrently: "
-    if [[ -z "$default" ]]; then
-        menu_title+="(not set)"
+    local menu_title="Choose ${mode_desc}\nCurrently: "
+    if [[ -z "${default}" ]]; then
+        menu_title+="(Not set)"
     else
-        menu_title+="$default"
+        menu_title+="${default}"
     fi
 
-    local cmd=(dialog --default-item "$default" --menu "$menu_title"  22 76 16 )
+    local cmd=(dialog --default-item "${default}" --menu "${menu_title}"  22 76 16 )
     local choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
     [[ -z "${choice}" ]] && return
 
     if [[ "${choice}" == "X" ]]; then
-        default_mode del "$mode"
+        default_mode del "${mode}"
     else
-        default_mode set "$mode" "${choice}"
+        default_mode set "${mode}" "${choice}"
     fi
     load_mode_defaults
 }
@@ -759,10 +759,10 @@ function choose_emulator() {
     local cancel="${3}"
 
     local mode_desc="default emulator for "
-    if [[ "$mode" == "emu_sys" ]]; then
+    if [[ "${mode}" == "emu_sys" ]]; then
         mode_desc+="${SYSTEM}"
     else
-        mode_desc+="ROM ($ROM_BN)"
+        mode_desc+="ROM (${ROM_BN})"
     fi
 
     local default_id
@@ -775,34 +775,34 @@ function choose_emulator() {
         local id=${line[0]}
         [[ "${id}" == "default" ]] && continue
         local apps[${i}]="${id}"
-        if [[ "${id}" == "$default" ]]; then
+        if [[ "${id}" == "${default}" ]]; then
             default_id="${i}"
         fi
         options+=("${i}" "${id}")
         ((i++))
-    done < <(sort "$EMU_SYS_CONF")
+    done < <(sort "${EMU_SYS_CONF}")
     if [[ "${#options[@]}" -eq 0 ]]; then
-        dialog --msgbox "No Emulator Options Found For ${SYSTEM} - Do You Have A Valid ${EMU_SYS_CONF}?" 20 60 >/dev/tty
+        dialog --msgbox "No emulator options found for ${SYSTEM} - Do you have a valid ${EMU_SYS_CONF}?" 20 60 >/dev/tty
         stop_joy2key
         exit 1
     fi
-    [[ "$mode" != "emu_sys" ]] && options=("X" "Clear / Remove" "${options[@]}")
+    [[ "${mode}" != "emu_sys" ]] && options=("X" "Clear / Remove" "${options[@]}")
 
-    local menu_title="Choose $mode_desc\nCurrently: "
-    if [[ -z "$default" ]]; then
-        menu_title+="(not set)"
+    local menu_title="Choose ${mode_desc}\nCurrently: "
+    if [[ -z "${default}" ]]; then
+        menu_title+="(Not set)"
     else
-        menu_title+="$default"
+        menu_title+="${default}"
     fi
 
-    local cmd=(dialog $cancel --default-item "$default_id" --menu "$menu_title"  22 76 16 )
+    local cmd=(dialog $cancel --default-item "${default_id}" --menu "${menu_title}"  22 76 16 )
     local choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
     [[ -z "${choice}" ]] && return
 
     if [[ "${choice}" == "X" ]]; then
-        default_emulator del "$mode"
+        default_emulator del "${mode}"
     else
-        default_emulator set "$mode" "${apps[${choice}]}"
+        default_emulator set "${mode}" "${apps[${choice}]}"
     fi
     get_sys_command
     set_save_vars
@@ -852,9 +852,9 @@ function choose_render_res() {
         O "Use Video Output Resolution"
         C "Use Config File Resolution"
     )
-    [[ "$default" == "output" ]] && default="O"
-    [[ "$default" == "config" ]] && default="C"
-    local cmd=(dialog --default-item "$default" --menu "Choose RetroArch Render Resolution" 22 76 16 )
+    [[ "${default}" == "output" ]] && default="O"
+    [[ "${default}" == "config" ]] && default="C"
+    local cmd=(dialog --default-item "${default}" --menu "Choose RetroArch render resolution" 22 76 16 )
     local choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
     [[ -z "${choice}" ]] && return
     case "${choice}" in
@@ -869,7 +869,7 @@ function choose_render_res() {
             ;;
     esac
 
-    default_mode set "$mode" "${choice}"
+    default_mode set "${mode}" "${choice}"
     load_mode_defaults
 }
 
@@ -889,13 +889,13 @@ function user_menu() {
     local choice
     local ret
     while true; do
-        cmd=(dialog --default-item "$default" --cancel-label "Back" --menu "Choose An Option"  22 76 16)
+        cmd=(dialog --default-item "${default}" --cancel-label "Back" --menu "Choose an option"  22 76 16)
         choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
         [[ -z "${choice}" ]] && return 0
         default="${choice}"
         script="runcommand-menu/${options[choice*2-1]}.sh"
         user_script "${script}"
-        ret="$?"
+        ret="${?}"
         [[ "${ret}" -eq 1 || "${ret}" -eq 2 ]] && return "${ret}"
     done
 }
@@ -920,27 +920,27 @@ function build_xinitrc() {
     local mode="${1}"
     local xinitrc="/dev/shm/emptypie_xinitrc"
 
-    case "$mode" in
+    case "${mode}" in
         clear)
-            rm -rf "$xinitrc"
+            rm -rf "${xinitrc}"
             ;;
         build)
-            echo "#!/usr/bin/env bash" >"$xinitrc"
+            echo "#!/usr/bin/env bash" >"${xinitrc}"
 
             # do modesetting (if supported)
-            if [[ -n "$HAS_MODESET" ]]; then
-                cat >>"$xinitrc" <<_EOF_
-XRANDR_OUTPUT="\$($XRANDR --verbose | grep " connected" | awk '{ print \${1} }')"
-$XRANDR --output \$XRANDR_OUTPUT --mode ${MODE_CUR[2]}x${MODE_CUR[3]} --refresh ${MODE_CUR[5]}
-echo "Set mode ${MODE_CUR[2]}x${MODE_CUR[3]}@${MODE_CUR[5]}Hz on \$XRANDR_OUTPUT"
+            if [[ -n "${HAS_MODESET}" ]]; then
+                cat >>"${xinitrc}" <<_EOF_
+XRANDR_OUTPUT="\$(${XRANDR} --verbose | grep " connected" | awk '{ print \${1} }')"
+${XRANDR} --output \${XRANDR_OUTPUT} --mode ${MODE_CUR[2]}x${MODE_CUR[3]} --refresh ${MODE_CUR[5]}
+echo "Set mode ${MODE_CUR[2]}x${MODE_CUR[3]}@${MODE_CUR[5]}Hz on \${XRANDR_OUTPUT}"
 _EOF_
             fi
 
-            if [[ "$XINIT_WM" -gt 0 ]]; then
+            if [[ "${XINIT_WM}" -gt 0 ]]; then
                 local params=()
-                [[ "$XINIT_WM" -eq 1 ]] && params+=(-use_cursor no)
-                [[ "$XINIT_WM" -eq 2 ]] && params+=(-use_cursor yes)
-                cat >>"$xinitrc" <<_EOF_
+                [[ "${XINIT_WM}" -eq 1 ]] && params+=(-use_cursor no)
+                [[ "${XINIT_WM}" -eq 2 ]] && params+=(-use_cursor yes)
+                cat >>"${xinitrc}" <<_EOF_
 matchbox-window-manager ${params[@]} &
 sleep 0.5
 xset -dpms s off s noblank
@@ -948,29 +948,29 @@ _EOF_
             fi
 
             # echo command line for runcommand log
-            cat >>"$xinitrc" <<_EOF_
+            cat >>"${xinitrc}" <<_EOF_
 echo -e "\nExecuting (via xinit): "${COMMAND//\$/\\\$}"\n"
 ${COMMAND//\$/\\\$}
 _EOF_
-            chmod +x "$xinitrc"
+            chmod +x "${xinitrc}"
 
             # rewrite command to launch our xinit script (if not startx)
             if ! [[ "${COMMAND}" =~ ^startx ]]; then
-                COMMAND="xinit $xinitrc"
+                COMMAND="xinit ${xinitrc}"
             fi
 
             # workaround for launching xserver on correct/user owned tty
             # see https://github.com/RetroPie/RetroPie-Setup/issues/1805
 
             # if no TTY env var is set, try & get it - eg if launching a ports script or runcommand manually
-            if [[ -z "$TTY" ]]; then
+            if [[ -z "${TTY}" ]]; then
                 TTY=$(tty)
                 TTY=${TTY:8:1}
             fi
 
             # if we managed to get the current tty then try & use it
-            if [[ -n "$TTY" ]]; then
-                COMMAND="${COMMAND} -- vt$TTY -keeptty"
+            if [[ -n "${TTY}" ]]; then
+                COMMAND="${COMMAND} -- vt${TTY} -keeptty"
             fi
             ;;
     esac
@@ -980,13 +980,13 @@ function mode_switch() {
     local command_prefix
     local separator="-"
     # X11 uses hypens in connector names
-    [[ $HAS_MODESET == "x11" ]] && separator=":"
+    [[ ${HAS_MODESET} == "x11" ]] && separator=":"
     local mode_id=(${1/${separator}/ })
 
     # if the requested mode is the same as the current mode, don't switch
     [[ "${mode_id[*]}" == "${MODE_CUR[0]} ${MODE_CUR[1]}" ]] && return 1
 
-    if [[ "$HAS_MODESET" == "kms" ]]; then
+    if [[ "${HAS_MODESET}" == "kms" ]]; then
         # update the target resolution even though the underlying fb hasn't changed
         MODE_CUR=($(get_${HAS_MODESET}_mode_info "${mode_id[*]}"))
 
@@ -995,17 +995,17 @@ function mode_switch() {
             # inject the environment variables to do modesetting for SDL2 applications
             command_prefix="SDL_VIDEO_KMSDRM_CRTCID=${MODE_CUR[0]} SDL_VIDEO_KMSDRM_MODEID=${MODE_CUR[1]}"
         fi
-        COMMAND="$(echo "$command_prefix ${COMMAND}" | sed -e "s/;/; $command_prefix /g")"
+        COMMAND="$(echo "${command_prefix} ${COMMAND}" | sed -e "s/;/; ${command_prefix} /g")"
 
         return 0
-    elif [[ "$HAS_MODESET" == "x11" ]]; then
+    elif [[ "${HAS_MODESET}" == "x11" ]]; then
         # query the target resolution
         MODE_CUR=($(get_${HAS_MODESET}_mode_info "${mode_id[*]}"))
         # set target resolution
-        $XRANDR --output "${MODE_CUR[0]}" --mode "${MODE_CUR[1]}"
+        ${XRANDR} --output "${MODE_CUR[0]}" --mode "${MODE_CUR[1]}"
 
-        [[ "$?" -eq 0 ]] && return 0
-    elif [[ "$HAS_MODESET" == "tvs" ]]; then
+        [[ "${?}" -eq 0 ]] && return 0
+    elif [[ "${HAS_MODESET}" == "tvs" ]]; then
         if [[ "${mode_id[0]}" == "PAL" ]] || [[ "${mode_id[0]}" == "NTSC" ]]; then
             $TVSERVICE -c "${mode_id[*]}" >/dev/null
         else
@@ -1013,11 +1013,11 @@ function mode_switch() {
         fi
 
         # if we have switched mode, switch the framebuffer resolution also
-        if [[ "$?" -eq 0 ]]; then
+        if [[ "${?}" -eq 0 ]]; then
             sleep 1
             clear
             MODE_CUR=($(get_${HAS_MODESET}_mode_info))
-            [[ -z "$FB_NEW" ]] && FB_NEW="${MODE_CUR[2]}x${MODE_CUR[3]}"
+            [[ -z "${FB_NEW}" ]] && FB_NEW="${MODE_CUR[2]}x${MODE_CUR[3]}"
             return 0
         fi
     fi
@@ -1031,21 +1031,21 @@ function mode_switch() {
 # }
 
 function config_backend() {
-    # if we are running under X then don't try & use a different backend
-    [[ -n "$DISPLAY" || "$XINIT" -eq 1 ]] && return
+    # If we are running under X then don't try & use a different backend
+    [[ -n "${DISPLAY}" || "${XINIT}" -eq 1 ]] && return
     local name="${1}"
-    # if we have a backends.conf file & with an entry for the current emulator name,
+    # If we have a backends.conf file & with an entry for the current emulator name,
     # change the library path to load dispmanx sdl first
-    if [[ -f "$BACKENDS_CONF" ]]; then
-        iniConfig " = " '"' "$BACKENDS_CONF"
-        iniGet "$name"
-        case "$ini_value" in
-            1|dispmanx)
-                if [[ "$HAS_MODESET" == "kms" ]]; then
-                    COMMAND="SDL_DISPMANX_WIDTH=${MODE_CUR[2]} SDL_DISPMANX_HEIGHT=${MODE_CUR[3]} ${COMMAND}"
-                fi
-                COMMAND="SDL1_VIDEODRIVER=dispmanx ${COMMAND}"
-                ;;
+    if [[ -f "${BACKENDS_CONF}" ]]; then
+        iniConfig " = " '"' "${BACKENDS_CONF}"
+        iniGet "${name}"
+        case "${ini_value}" in
+            #1|dispmanx)
+            #    if [[ "${HAS_MODESET}" == "kms" ]]; then
+            #        COMMAND="SDL_DISPMANX_WIDTH=${MODE_CUR[2]} SDL_DISPMANX_HEIGHT=${MODE_CUR[3]} ${COMMAND}"
+            #    fi
+            #    COMMAND="SDL1_VIDEODRIVER=dispmanx ${COMMAND}"
+            #    ;;
             x11)
                 XINIT=1
                 XINIT_WM=1
@@ -1068,24 +1068,24 @@ function retroarch_append_config() {
     # make sure tmp folder exists for unpacking archives
     mkdir -p "/tmp/retroarch"
 
-    rm -f "$conf"
-    touch "$conf"
-    iniConfig " = " '"' "$conf"
+    rm -f "${conf}"
+    touch "${conf}"
+    iniConfig " = " '"' "${conf}"
 
     # strip any suffix decimals appearing in refresh rate, just for comparison
-    if [[ -n "$HAS_MODESET" && "${MODE_CUR[5]%.*}" -gt 0 ]]; then
+    if [[ -n "${HAS_MODESET}" && "${MODE_CUR[5]%.*}" -gt 0 ]]; then
         # set video_refresh_rate in our config to the same as the screen refresh
         iniSet "video_refresh_rate" "${MODE_CUR[5]}"
     fi
 
     # populate with target resolution & fullscreen flag if KMS is active
-    if [[ "$HAS_MODESET" != "tvs" ]]; then
+    if [[ "${HAS_MODESET}" != "tvs" ]]; then
         iniSet "video_fullscreen" "true"
         iniSet "video_fullscreen_x" "${MODE_CUR[2]}"
         iniSet "video_fullscreen_y" "${MODE_CUR[3]}"
     # if our render resolution is "config", then we don't set anything (use the value in the retroarch.cfg)
-    elif [[ "$RENDER_RES" != "config" ]]; then
-        if [[ "$RENDER_RES" == "output" ]]; then
+    elif [[ "${RENDER_RES}" != "config" ]]; then
+        if [[ "${RENDER_RES}" == "output" ]]; then
             dim=(0 0)
         else
             dim=(${RENDER_RES/x/ })
@@ -1095,15 +1095,15 @@ function retroarch_append_config() {
     fi
 
     # set `libretro_directory` to the core parent folder
-    local core_dir=$(echo "${COMMAND}" | grep -Eo "$ROOTDIR/libretrocores/.*libretro\.so" | head -n 1)
-    core_dir=$(dirname "$core_dir")
-    [[ -n "$core_dir" ]] && iniSet "libretro_directory" "$core_dir"
+    local core_dir=$(echo "${COMMAND}" | grep -Eo "${ROOTDIR}/libretrocores/.*libretro\.so" | head -n 1)
+    core_dir=$(dirname "${core_dir}")
+    [[ -n "${core_dir}" ]] && iniSet "libretro_directory" "${core_dir}"
 
     # Dynamically Set BIOS Location
     iniSet "system_directory" "${BIOSDIR}/${SYSTEM}"
 
     # if verbose logging is on, set core logging to INFO
-    [[ "$VERBOSE" -eq 1 ]] && iniSet "libretro_log_level" "1"
+    [[ "${VERBOSE}" -eq 1 ]] && iniSet "libretro_log_level" "1"
 
     # if the ROM has a custom configuration then append that too
     if [[ -f "${ROM}.cfg" ]]; then
@@ -1112,15 +1112,15 @@ function retroarch_append_config() {
 
     # if we already have an existing appendconfig parameter, we need to add our configs to that
     if [[ "${COMMAND}" =~ "--appendconfig" ]]; then
-        COMMAND=$(echo "${COMMAND}" | sed "s#\(--appendconfig *[^ $]*\)#\1'|'$conf#")
+        COMMAND=$(echo "${COMMAND}" | sed "s#\(--appendconfig *[^ $]*\)#\1'|'${conf}#")
     else
-        COMMAND+=" --appendconfig $conf"
+        COMMAND+=" --appendconfig ${conf}"
     fi
 
     # append any NETPLAY configuration
-    if [[ "$NETPLAY" -eq 1 ]] && [[ -f "$RETRONETPLAY_CONF" ]]; then
-        source "$RETRONETPLAY_CONF"
-        COMMAND+=" -$__netplaymode $__netplayhostip_cfile --port $__netplayport --nick $__netplaynickname"
+    if [[ "${NETPLAY}" -eq 1 ]] && [[ -f "${RETRONETPLAY_CONF}" ]]; then
+        source "${RETRONETPLAY_CONF}"
+        COMMAND+=" -${__netplaymode} ${__netplayhostip_cfile} --port ${__netplayport} --nick ${__netplaynickname}"
     fi
 }
 
@@ -1130,23 +1130,23 @@ function set_governor() {
     # which would cause us to save the wrong state for cpu1/2/3 after setting cpu0. On the RPI we could just process
     # cpu0, but this code needs to work on other platforms that do support a "per core" CPU governor.
     for cpu in /sys/devices/system/cpu/cpu[0-9]*/cpufreq/scaling_governor; do
-        governor_old+=($(<$cpu))
+        governor_old+=($(<${cpu}))
     done
     for cpu in /sys/devices/system/cpu/cpu[0-9]*/cpufreq/scaling_governor; do
-        echo "${1}" | sudo tee "$cpu" >/dev/null
+        echo "${1}" | sudo tee "${cpu}" >/dev/null
     done
 }
 
 function restore_governor() {
     local i=0
     for cpu in /sys/devices/system/cpu/cpu[0-9]*/cpufreq/scaling_governor; do
-        echo "${governor_old[${i}]}" | sudo tee "$cpu" >/dev/null
+        echo "${governor_old[${i}]}" | sudo tee "${cpu}" >/dev/null
         ((i++))
     done
 }
 
 function get_sys_command() {
-    if [[ ! -f "$EMU_SYS_CONF" ]]; then
+    if [[ ! -f "${EMU_SYS_CONF}" ]]; then
         echo "No config found for system ${SYSTEM}"
         stop_joy2key
         exit 1
@@ -1154,7 +1154,7 @@ function get_sys_command() {
 
     # get system & rom specific emulator if set
     local emulator="$(default_emulator get emu_sys)"
-    if [[ -z "$emulator" ]]; then
+    if [[ -z "${emulator}" ]]; then
         echo "No default emulator found for system ${SYSTEM}"
         start_joy2key
         choose_emulator "emu_sys" "" "--nocancel"
@@ -1162,26 +1162,26 @@ function get_sys_command() {
         get_sys_command "${SYSTEM}" "${ROM}"
         return
     fi
-    EMULATOR="$emulator"
+    EMULATOR="${emulator}"
 
     # get default emulator for system + rom combination
     # try the old key first & convert to the new key if found
     emulator="$(default_emulator get emu_rom_old)"
 
-    if [[ -n "$emulator" ]]; then
+    if [[ -n "${emulator}" ]]; then
         default_emulator del emu_rom_old
-        default_emulator set emu_rom "$emulator"
-        EMULATOR="$emulator"
+        default_emulator set emu_rom "${emulator}"
+        EMULATOR="${emulator}"
     else
         emulator="$(default_emulator get emu_rom)"
-        [[ -n "$emulator" ]] && EMULATOR="$emulator"
+        [[ -n "${emulator}" ]] && EMULATOR="${emulator}"
     fi
 
     COMMAND="$(default_emulator get emu_cmd)"
 
     # replace tokens
     COMMAND="${COMMAND//\%ROM\%/\"${ROM}\"}"
-    COMMAND="${COMMAND//\%BASENAME\%/\"$ROM_BN\"}"
+    COMMAND="${COMMAND//\%BASENAME\%/\"${ROM_BN}\"}"
 
     # special case to get the last 2 folders for quake games for the -game parameter
     # remove everything up to /quake/
@@ -1202,7 +1202,7 @@ function get_sys_command() {
             # If It Starts With XINIT It Is An X11 Application (So We Need To Launch Via xinit)
             XINIT*)
                 XINIT=1
-                ;;&
+                ;;
             # If It Starts With XINIT-WM Or XINIT-WMC (With Cursor) It Is An X11 Application Needing A Window Manager
             XINIT-WM)
                 XINIT_WM=1
@@ -1254,12 +1254,12 @@ function show_launch() {
             imv -f -x -t "${IMAGE_DELAY}" "${image}" </dev/tty &>/dev/null
             IMG_PID=${!}
         else
-            fbi -1 -t "$IMAGE_DELAY" -noverbose -a "$image" </dev/tty &>/dev/null
+            fbi -1 -t "${IMAGE_DELAY}" -noverbose -a "${image}" </dev/tty &>/dev/null
         fi
-    elif [[ "$DISABLE_MENU" -ne 1 && "${USE_ART}" -ne 1 ]]; then
+    elif [[ "${DISABLE_MENU}" -ne 1 && "${USE_ART}" -ne 1 ]]; then
         local launch_name
-        if [[ -n "$ROM_BN" ]]; then
-            launch_name="$ROM_BN (${EMULATOR})"
+        if [[ -n "${ROM_BN}" ]]; then
+            launch_name="${ROM_BN} (${EMULATOR})"
         else
             launch_name="${EMULATOR}"
         fi
@@ -1275,7 +1275,7 @@ function check_menu() {
         [[ -n "${IMG_PID}" ]] && kill -SIGINT "${IMG_PID}"
         tput cnorm
         main_menu
-        dont_launch=$?
+        dont_launch=${?}
         tput civis
         clear
     fi
@@ -1292,7 +1292,7 @@ function user_script() {
 
 function restore_cursor_and_exit() {
     # if we are not being run from emulationstation (get parent of parent), turn the cursor back on.
-    if [[ "$(ps -o comm= -p $(ps -o ppid= -p $PPID))" != "emulationstatio" ]]; then
+    if [[ "$(ps -o comm= -p $(ps -o ppid= -p ${PPID}))" != "emulationstatio" ]]; then
         tput cnorm
     fi
 
@@ -1309,11 +1309,11 @@ function launch_command() {
         # Turn Cursor On
         tput cnorm
         eval "${COMMAND}" </dev/tty 2>>"${LOG}"
-        ret=$?
+        ret=${?}
         tput civis
     else
         eval "${COMMAND}" </dev/tty &>>"${LOG}"
-        ret=$?
+        ret=${?}
     fi
     return ${ret}
 }
@@ -1346,7 +1346,7 @@ function runcommand() {
     start_joy2key
     show_launch
 
-    if [[ "$DISABLE_MENU" -ne 1 ]]; then
+    if [[ "${DISABLE_MENU}" -ne 1 ]]; then
         if ! check_menu; then
             stop_joy2key
             user_script "runcommand-onend.sh"
@@ -1366,17 +1366,17 @@ function runcommand() {
     # resave info after menu & resolution replacements so runcommand.info is up to date
     log_info
 
-    #[[ -n "$FB_NEW" ]] && switch_fb_res $FB_NEW
+    #[[ -n "${FB_NEW}" ]] && switch_fb_res ${FB_NEW}
 
-    config_backend "$SAVE_EMU"
+    config_backend "${SAVE_EMU}"
 
     # switch to configured cpu scaling governor
-    [[ -n "$GOVERNOR" ]] && set_governor "$GOVERNOR"
+    [[ -n "${GOVERNOR}" ]] && set_governor "${GOVERNOR}"
 
     retroarch_append_config
 
     # build xinitrc & rewrite command if not already in X11 context
-    if [[ "$XINIT" -eq 1 && "$HAS_MODESET" != "x11" ]]; then
+    if [[ "${XINIT}" -eq 1 && "${HAS_MODESET}" != "x11" ]]; then
         build_xinitrc build
     fi
 
@@ -1384,7 +1384,7 @@ function runcommand() {
 
     local ret
     launch_command "${@}"
-    ret=$?
+    ret=${?}
 
     [[ -n "${IMG_PID}" ]] && kill -SIGINT "${IMG_PID}"
 
@@ -1394,18 +1394,18 @@ function runcommand() {
     rm -rf "/tmp/retroarch"
 
     # restore default cpu scaling governor
-    [[ -n "$GOVERNOR" ]] && restore_governor
+    [[ -n "${GOVERNOR}" ]] && restore_governor
 
     # if we switched mode - restore preferred mode
-    mode_switch "$MODE_ORIG_ID"
+    mode_switch "${MODE_ORIG_ID}"
 
     # delete temporary xinitrc launch script
-    if [[ "$XINIT" -eq 1 && "$HAS_MODESET" != "x11" ]]; then
+    if [[ "${XINIT}" -eq 1 && "${HAS_MODESET}" != "x11" ]]; then
         build_xinitrc clear
     fi
 
     # reset/restore framebuffer res (if it was changed)
-    [[ -n "$FB_NEW" ]] && restore_fb
+    [[ -n "${FB_NEW}" ]] && restore_fb
 
     [[ "${EMULATOR}" == lr-* ]] && retroarchIncludeToEnd "${CONF_ROOT}/retroarch.cfg"
 

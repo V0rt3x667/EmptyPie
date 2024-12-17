@@ -423,7 +423,7 @@ function _scrape_chosen_skyscraper() {
     choices=($("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty))
 
     # Exit If Nothing Was Chosen Or Cancel Was Used
-    [[ ${#choices[@]} -eq 0 || $? -eq 1 ]] && return 1
+    [[ ${#choices[@]} -eq 0 || ${?} -eq 1 ]] && return 1
 
     # Confirm With The User That Scraping Can Start
     local cli=("${md_inst}/Skyscraper ")
@@ -437,7 +437,7 @@ function _scrape_chosen_skyscraper() {
     msg+="For each selected <platform> Skyscraper is run with these commandline options:\n\n${sky_cmd}"
 
     dialog --clear --colors --yes-label "Proceed" --no-label "Abort" --yesno "${msg}" 20 70 2>&1 >/dev/tty
-    [[ ! $? -eq 0 ]] && return 1
+    [[ ! ${?} -eq 0 ]] && return 1
 
     local choice
 
@@ -472,7 +472,7 @@ function _generate_chosen_skyscraper() {
     choices=($("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty))
 
     # Exit If Nothing Was Chosen Or Cancel Was Used
-    [[ ${#choices[@]} -eq 0 || $? -eq 1 ]] && return 1
+    [[ ${#choices[@]} -eq 0 || ${?} -eq 1 ]] && return 1
 
     for choice in "${choices[@]}"; do
         choice="${options[choice*3-2]}"
@@ -669,7 +669,7 @@ function gui_skyscraper() {
                 1)
                     if _scrape_chosen_skyscraper; then
                         printMsgs "dialog" "ROM Information Gathered.\n\nDon't Forget To Use 'Generate Game List(s)' To Add This Information To EmulationStation."
-                    elif [[ $? -eq 2 ]]; then
+                    elif [[ ${?} -eq 2 ]]; then
                         printMsgs "dialog" "Gathering Was Aborted"
                     fi
                     ;;
@@ -721,7 +721,7 @@ function gui_skyscraper() {
                 4)
                     if _generate_chosen_skyscraper "cache"; then
                         printMsgs "dialog" "Game List(s) Generated"
-                    elif [[ $? -eq 2 ]]; then
+                    elif [[ ${?} -eq 2 ]]; then
                         printMsgs "dialog" "Game List Generation Aborted"
                     fi
                     ;;
@@ -871,7 +871,7 @@ function _gui_cache_skyscraper() {
                     ;;
                 P)
                     dialog --clear --defaultno --colors --yesno  "\Z1\ZbAre You Sure?\Zn\nThis Will \Zb\ZuERASE\Zn All Locally Cached Scraped Resources" 8 60 2>&1 >/dev/tty
-                    if [[ $? == 0 ]]; then
+                    if [[ ${?} == 0 ]]; then
                         _purge_skyscraper
                     fi
                     ;;

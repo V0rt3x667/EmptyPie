@@ -345,7 +345,7 @@ function gui_esthemes() {
             fi
             ((i++))
         done
-        local cmd=(dialog --default-item "${default}" --backtitle "${__backtitle}" --menu "Choose An Option" 22 76 16)
+        local cmd=(dialog --default-item "${default}" --backtitle "${__backtitle}" --menu "Choose an option" 22 76 16)
         local choice
         choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
         default="${choice}"
@@ -354,7 +354,7 @@ function gui_esthemes() {
             G)
                 if [[ "${status[0]}" == "i" ]]; then
                     options=(1 "View Theme Gallery" 2 "Update Theme Gallery" 3 "Remove Theme Gallery")
-                    cmd=(dialog --backtitle "${__backtitle}" --menu "Choose An Option For Gallery" 12 40 06)
+                    cmd=(dialog --backtitle "${__backtitle}" --menu "Choose an option For Gallery" 12 40 06)
                     local choice
                     choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
                     case "${choice}" in
@@ -408,7 +408,7 @@ function gui_esthemes() {
                 fi
                 if [[ "${status[choice]}" == "i" ]]; then
                     options=(1 "Update ${name}" 2 "Uninstall ${name}")
-                    cmd=(dialog --backtitle "${__backtitle}" --menu "Choose An Option For Theme" 12 60 06)
+                    cmd=(dialog --backtitle "${__backtitle}" --menu "Choose an option For Theme" 12 60 06)
                     local choice
                     choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
                     case "${choice}" in

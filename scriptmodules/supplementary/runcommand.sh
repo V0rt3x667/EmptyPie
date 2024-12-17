@@ -109,7 +109,7 @@ function gui_runcommand() {
 
         [[ -z "${governor}" ]] && governor="Default: (Do Not Change)"
 
-        cmd=(dialog --backtitle "${__backtitle}" --cancel-label "Exit" --default-item "${default}" --menu "Choose An Option" 22 86 16)
+        cmd=(dialog --backtitle "${__backtitle}" --cancel-label "Exit" --default-item "${default}" --menu "Choose an option" 22 86 16)
         options=()
 
         if [[ "${disable_menu}" -eq 0 ]]; then

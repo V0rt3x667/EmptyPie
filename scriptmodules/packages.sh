@@ -149,7 +149,7 @@ function rp_callModule() {
 
             if [[ "${has_net}" -eq 1 ]]; then
                 rp_hasBinary "${md_id}"
-                local ret="$?"
+                local ret="${?}"
                 [[ "${ret}" -eq 0 ]] && has_binary=1
                 [[ "${ret}" -eq 2 ]] && has_net=0
             fi
@@ -166,9 +166,9 @@ function rp_callModule() {
             if [[ "${mode}" == "_update_" ]]; then
                 printMsgs "heading" "Checking for updates for ${md_id}"
                 rp_hasNewerModule "${md_id}" "${pkg_origin}"
-                [[ "$?" -eq 0 || "$?" == 2 ]] && do_update=1
+                [[ "${?}" -eq 0 || "${?}" == 2 ]] && do_update=1
                 # If rp_hasNewerModule returns 3, then there was an error & we should abort
-                [[ "$?" -eq 3 ]] && return 1
+                [[ "${?}" -eq 3 ]] && return 1
             else
                 do_update=1
             fi
@@ -278,16 +278,16 @@ function rp_callModule() {
             action="Getting sources for"
             mkdir -p "${md_build}"
             pushd "${md_build}"
-            pushed=$?
+            pushed=${?}
             ;;
         build)
             action="Building"
             pushd "${md_build}" 2>/dev/null
-            pushed=$?
+            pushed=${?}
             ;;
         install)
             pushd "${md_build}" 2>/dev/null
-            pushed=$?
+            pushed=${?}
             ;;
         install_bin)
             action="Installing (Binary)"
@@ -295,7 +295,7 @@ function rp_callModule() {
         configure)
             action="Configuring"
             pushd "${md_inst}" 2>/dev/null
-            pushed=$?
+            pushed=${?}
             ;;
         remove)
             action="Removing"
@@ -318,7 +318,7 @@ function rp_callModule() {
             md_mode="remove"
             if fnExists "configure_${md_id}"; then
                 pushd "${md_inst}" 2>/dev/null
-                pushed=$?
+                pushed=${?}
                 "configure_${md_id}"
             fi
             rm -rf "${md_inst}"
@@ -436,7 +436,7 @@ function rp_remoteFileExists() {
     # 'runCurl' will cause stderr to be copied to output so we redirect both stdout/stderr to /dev/null
     # Any errors will have been captured by runCurl
     runCurl --location --max-time 10 --silent --show-error --fail --head "${url}" &>/dev/null
-    ret="$?"
+    ret="${?}"
     if [[ "${ret}" -eq 0 ]]; then
         return 0
     elif [[ "${ret}" -eq 22 ]]; then
@@ -456,7 +456,7 @@ function rp_hasBinary() {
 
     local ret=1
     rp_remoteFileExists "${url}"
-    ret="$?"
+    ret="${?}"
 
     # If there wasn't an error, cache the result
     [[ "${ret}" -ne 2 ]] && __mod_info[${id}/has_binary]="${ret}"
@@ -543,7 +543,7 @@ function rp_getRemoteRepoHash() {
             hash=$("${cmd[@]}" 2>/dev/null | grep -oP "Last Changed Rev: \K.*")
             ;;
     esac
-    ret="$?"
+    ret="${?}"
     set +o pipefail
     if [[ "${ret}" -ne 0 ]]; then
         echo "${cmd[*]} failed with return code ${ret} - please check your network connection"
@@ -574,7 +574,7 @@ function rp_hasNewerModule() {
                 local bin_date="$(rp_getBinaryDate ${id})"
                 if [[ -n "${bin_date}" ]]; then
                     rp_dateIsNewer "${pkg_date}" "${bin_date}"
-                    ret="$?"
+                    ret="${?}"
                 fi
             fi
             [[ -z "${ret}" ]] && ret=2
@@ -587,7 +587,7 @@ function rp_hasNewerModule() {
                     if [[ -n "${pkg_repo_date}" ]]; then
                         local file_date="$(rp_getFileDate "${repo_url}")"
                         rp_dateIsNewer "${pkg_repo_date}" "${file_date}"
-                        ret="$?"
+                        ret="${?}"
                     fi
                     ;;
                 git|svn)
@@ -621,7 +621,7 @@ function rp_hasNewerModule() {
                     local function="${repo_type:1}"
                     if fnExists "${function}"; then
                         "${function}" newer
-                        ret="$?"
+                        ret="${?}"
                     fi
                     ;;
                 *)

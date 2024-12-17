@@ -423,7 +423,7 @@ function gui_retroarch() {
             6 "Configure Keyboard For Use With RetroArch"
             7 "Configure Keyboard Hotkey Behaviour For RetroArch"
         )
-        local cmd=(dialog --backtitle "${__backtitle}" --menu "Choose An Option" 22 76 16)
+        local cmd=(dialog --backtitle "${__backtitle}" --menu "Choose an option" 22 76 16)
         local choice
         choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
         case "${choice}" in
@@ -431,7 +431,7 @@ function gui_retroarch() {
                 name="${names[choice-1]}"
                 dir="${dirs[choice-1]}"
                 options=(1 "Install/Update ${name}" 2 "Uninstall ${name}" )
-                cmd=(dialog --backtitle "${__backtitle}" --menu "Choose An Option For ${dir}" 12 40 06)
+                cmd=(dialog --backtitle "${__backtitle}" --menu "Choose an option For ${dir}" 12 40 06)
                 choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
 
                 case "${choice}" in
