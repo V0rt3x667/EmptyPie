@@ -21,9 +21,8 @@ function depends_runcommand() {
     if isPlatform "x11"; then
         depends=('imv')
     else
-        depends=('fbida')
+        depends=('fbida-fbi')
     fi
-    isPlatform "rpi" && depends+=('firmware-raspberrypi')
     getDepends "${depends[@]}"
 }
 
@@ -98,7 +97,6 @@ function gui_runcommand() {
     local options
     local default
     while true; do
-
         eval "$(loadModuleConfig \
             'disable_menu=0' \
             'use_art=0' \

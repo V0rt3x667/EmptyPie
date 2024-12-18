@@ -179,7 +179,7 @@ function get_emptypie_depends() {
         'python3-pyudev'
         'unzip'
         'xmlstarlet'
-)
+    )
     [[ -n "${DISTCC_HOSTS}" ]] && depends+=('distcc')
 
     [[ "${__use_ccache}" -eq 1 ]] && depends+=('ccache')

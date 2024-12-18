@@ -250,12 +250,18 @@ if [[ \$(id -u) -eq 0 ]]; then
     exit 1
 fi
 
-# Use SDL2 Wayland Video Driver If Wayland Session Is Detected
+# Populate Envar XDG_RUNTIME_DIR if empty. Elogind might not be installed or configured
+if [[ -z "${XDG_RUNTIME_DIR}" ]]; then
+    export XDG_RUNTIME_DIR="/tmp/xdg-runtime-\$(id -u)"
+    mkdir -p "${XDG_RUNTIME_DIR}"
+fi
+
+# Use SDL2 Wayland video driver if Wayland session is detected
 if [[ "${XDG_SESSION_TYPE}" == "wayland" ]]; then
     export SDL_VIDEODRIVER=wayland
 fi
 
-# Save Current TTY/VT Number For Use With X So It Can Be Launched On The Correct TTY
+# Save current TTY/VT number for use with X so it can be launched on the correct TTY
 TTY=\$(tty)
 export TTY="\${TTY:8:1}"
 
@@ -263,7 +269,7 @@ clear
 tput civis
 "${md_inst}/emulationstation.sh" "\${@}"
 if [[ \${?} -eq 139 ]]; then
-    dialog --cr-wrap --no-collapse --msgbox "EmulationStation Crashed!\n\nIf this is your first boot of EmptyPie, make sure you are using the correct image for your system.\n\\nCheck your rom file/folder permissions & if running on a Raspberry Pi, make sure your gpu_split is set high enough &/or switch back to using the Carbon theme." 20 60 >/dev/tty
+    dialog --cr-wrap --no-collapse --msgbox "EmulationStation crashed!\n\nIf this is your first boot of EmptyPie, make sure you are using the correct image for your system.\n\\nCheck your rom file/folder permissions & if running on a Raspberry Pi, make sure your gpu_split is set high enough & try switching back to using the Carbon theme." 20 60 >/dev/tty
 fi
 tput cnorm
 _EOF_
