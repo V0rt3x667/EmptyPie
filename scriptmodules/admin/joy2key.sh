@@ -71,6 +71,7 @@ _EOF_
     fi
 
     # Add an udev rule to give 'input' group write access to `/dev/uinput`
+    mkdir -p /etc/udev/rules.d
     echo 'KERNEL=="uinput", MODE="0660", GROUP="input"' > /etc/udev/rules.d/80-empi-uinput.rules
     udevadm control --reload
 
