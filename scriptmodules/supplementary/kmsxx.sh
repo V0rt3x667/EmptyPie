@@ -13,8 +13,10 @@ rp_module_flags=""
 
 function depends_kmsxx() {
     local depends=(
+        'fmt-devel'
         'fmt'
         'libdrm'
+        'libevdev'
         'meson'
         'ninja'
         'pkgconf'

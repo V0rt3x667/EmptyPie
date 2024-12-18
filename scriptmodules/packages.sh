@@ -220,7 +220,7 @@ function rp_callModule() {
     case "${mode}" in
         # Remove sources
         clean)
-            if [[ "$${__persistent_repos}" -eq 1 ]]; then
+            if [[ "${__persistent_repos}" -eq 1 ]]; then
                 if [[ -d "${md_build}/.git" ]]; then
                     git -C "${md_build}" reset --hard
                     git -C "${md_build}" clean -f -d
@@ -479,12 +479,12 @@ function rp_getFileDate() {
 }
 
 function rp_getBinaryDate() {
-bin_date    local id="${1}"
+    local id="${1}"
     local url="$(rp_getBinaryUrl ${id})"
     [[ -z "${url}" || "${url}" == "notest" ]] && return 1
     local bin_date
     if bin_date="$(rp_getFileDate "${url}")"; then
-        echo "$"
+        echo "${bin_date}"
         return 0
     fi
     return 1

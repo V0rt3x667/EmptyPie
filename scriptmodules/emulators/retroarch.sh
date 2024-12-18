@@ -21,7 +21,6 @@ function depends_retroarch() {
         'libxkbcommon'
         'libxml2'
         'mbedtls2'
-        'mesa'
         'miniupnpc'
         'openal'
         'sdl2'
