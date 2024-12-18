@@ -16,7 +16,7 @@ function depends_kmsxx() {
         'fmt-devel'
         'fmt'
         'libdrm'
-        'libevdev'
+        'libevdev-devel'
         'meson'
         'ninja'
         'pkgconf'
