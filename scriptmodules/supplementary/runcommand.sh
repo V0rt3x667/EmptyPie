@@ -52,7 +52,7 @@ function install_bin_runcommand() {
 }
 
 function remove_runcommand() {
-    rp_callModule "mesa-drm" "remove"
+    rp_callModule "kmsxx" "remove"
 }
 
 function governor_runcommand() {
